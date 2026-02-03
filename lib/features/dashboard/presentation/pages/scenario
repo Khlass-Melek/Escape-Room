@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart'; // optional for better UX
+
+class ScenarioDetailScreen extends StatefulWidget {
+  final Scenario scenario;
+
+  const ScenarioDetailScreen({super.key, required this.scenario});
+
+  @override
+  State<ScenarioDetailScreen> createState() => _ScenarioDetailScreenState();
+}
+
+class _ScenarioDetailScreenState extends State<ScenarioDetailScreen> {
+  // We'll use a list of controllers if multiple videos
+  late List<VideoPlayerController> _controllers;
+  late List<ChewieController> _chewieControllers; // if using Chewie
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = widget.scenario.videoUrls.map((url) {
+      return VideoPlayerController.networkUrl(Uri.parse(url))
+        ..initialize().then((_) {
+          setState(() {}); // refresh UI when ready
+        });
+    }).toList();
+
+    // Optional: Chewie for nice player UI
+    _chewieControllers = _controllers.map((controller) {
+      return ChewieController(
+        videoPlayerController: controller,
+        autoPlay: false,
+        looping: false,
+        allowFullScreen: true,
+        allowMuting: true,
+        // Customize look: materialProgressColors, cupertinoProgressColors, etc.
+      );
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    for (var chewie in _chewieControllers) {
+      chewie.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.scenario.name)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Make it responsive: side-by-side on wide screens, stacked on mobile
+          if (constraints.maxWidth > 800) {
+            return Row(
+              children: [
+                Expanded(child: _buildVideoSection()),
+                Expanded(child: _buildHintsSection()),
+              ],
+            );
+          } else {
+            return Column(
+              children: [
+                Expanded(child: _buildVideoSection()),
+                Expanded(child: _buildHintsSection()),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildVideoSection() {
+    return widget.scenario.videoUrls.isEmpty
+        ? const Center(child: Text('No videos for this scenario'))
+        : ListView.builder(
+            itemCount: widget.scenario.videoUrls.length,
+            itemBuilder: (context, index) {
+              final controller = _controllers[index];
+              if (!controller.value.isInitialized) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return Card(
+                margin: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: controller.value.aspectRatio,
+                      child: Chewie(controller: _chewieControllers[index]),
+                      // Or without Chewie: VideoPlayer(controller),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('Video ${index + 1}'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+  }
+
+  Widget _buildHintsSection() {
+    return Container(
+      color: Colors.black.withOpacity(0.8), // dark like a TV screen
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'TV Screen Messages / Hints',
+            style: TextStyle(color: Colors.yellowAccent, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: widget.scenario.hints.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.yellowAccent, width: 1),
+                    ),
+                    child: Text(
+                      widget.scenario.hints[index],
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
