@@ -1,234 +1,194 @@
-import 'package:escape_room_admin/router.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class LoginPage extends StatefulWidget {
+import 'package:escape_room_admin/core/theme/app_theme.dart';
+import 'package:escape_room_admin/features/auth/presentation/providers/auth_provider.dart';
+import 'package:escape_room_admin/shared/widgets/custom_text_field.dart';
+import 'package:escape_room_admin/shared/widgets/primary_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gap/gap.dart';
+
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  bool _isObscure = true;
-  bool _isLoading = false;
-  String? _loginError;
+  final _formKey = GlobalKey<FormState>();
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Email is required';
-    }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value.trim())) {
-      return 'Enter a valid email address';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Password is required';
-    }
-    if (value.trim().length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
-  }
-
-  Future<void> _signIn() async {
-    setState(() {
-      _loginError = null;
-    });
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    // Simulate network/auth delay (replace with real API / WebSocket / Firebase call)
-    await Future.delayed(const Duration(seconds: 1, milliseconds: 800));
-
-    // Fake successful login for now
-    // In real app: check credentials, get token, save to secure storage / provider / riverpod
-    final success = true; // ← change to false to test error
-
-    setState(() => _isLoading = false);
-
-    if (success) {
-      // Update auth state somewhere (e.g. Riverpod notifier, Bloc, or simple global)
-      setLoggedIn(true);
-      // Then redirect
-      if (mounted) {
-        context.go('/select-scenario');
-      }
-    } else {
-      setState(() {
-        _loginError = 'Invalid email or password. Try again.';
-      });
+  void _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      await ref.read(authProvider.notifier).login(
+            _usernameController.text.trim(),
+            _passwordController.text,
+          );
+      
+      // Navigation is handled by router listener in a real app, 
+      // but for simplicity we check state here too or rely on router redirect.
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Listen to auth state to show errors or navigate
+    ref.listen(authProvider, (previous, next) {
+      next.when(
+        data: (state) {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                backgroundColor: AppTheme.primaryRed,
+              ),
+            );
+          }
+          if (state.isAuthenticated) {
+            context.go('/select-scenario');
+          }
+        },
+        error: (err, stack) {},
+        loading: () {},
+      );
+    });
+
+    final authStateAsync = ref.watch(authProvider);
+    final authState = authStateAsync.value ?? const AuthState();
+    final isLoading = authStateAsync.isLoading;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      backgroundColor: AppTheme.primaryBlack,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Logo Placeholder
+                const Icon(
+                  Icons.lock_person, // Placeholder for THE ROOM logo
+                  size: 80,
+                  color: AppTheme.primaryRed,
+                ),
+                const Gap(24),
+                Text(
+                  'CONSOLE ADMIN',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: AppTheme.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Gap(48),
+
+                // Login Form
+                Form(
+                  key: _formKey,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header / Branding
-                      const Icon(
-                        Icons.security_rounded,
-                        size: 80,
-                        color: Color.fromARGB(255, 183, 58, 58),
+                      CustomTextField(
+                        controller: _usernameController,
+                        label: 'Nom d\'utilisateur',
+                        hint: 'Entrez votre identifiant',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer un nom d\'utilisateur';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Escape Room Control',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: const Color.fromARGB(255, 115, 31, 31),
+                      const Gap(16),
+                      CustomTextField(
+                        controller: _passwordController,
+                        label: 'Mot de passe',
+                        hint: 'Entrez votre mot de passe',
+                        obscureText: !_isPasswordVisible,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: AppTheme.grayText,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer un mot de passe';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign in to manage scenarios & surveillance',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-
-                      // Form
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.next,
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: const Icon(Icons.email_outlined),
-                                border: const OutlineInputBorder(),
-                                filled: true,
-                                fillColor: Colors.grey[50],
-                              ),
-                              validator: _validateEmail,
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                            ),
-                            const SizedBox(height: 24),
-
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _isObscure,
-                              textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) => _signIn(),
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _isObscure ? Icons.visibility_off : Icons.visibility,
-                                  ),
-                                  onPressed: () => setState(() => _isObscure = !_isObscure),
+                      const Gap(24),
+                      
+                      // Error Message
+                      if (authState.error != null)
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryRed.withOpacity(0.1),
+                            border: Border.all(color: AppTheme.secondaryRed),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline, color: AppTheme.primaryRed),
+                              const Gap(8),
+                              Expanded(
+                                child: Text(
+                                  authState.error!,
+                                  style: const TextStyle(color: AppTheme.primaryRed),
                                 ),
-                                border: const OutlineInputBorder(),
-                                filled: true,
-                                fillColor: Colors.grey[50],
                               ),
-                              validator: _validatePassword,
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Error message
-                      if (_loginError != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            _loginError!,
-                            style: TextStyle(color: theme.colorScheme.error),
-                            textAlign: TextAlign.center,
+                            ],
                           ),
                         ),
+                        
+                      const Gap(24),
 
-                      const SizedBox(height: 24),
-
-                      // Sign In Button
-                      FilledButton.icon(
-                        onPressed: _isLoading ? null : _signIn,
-                        icon: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.login),
-                        label: Text(
-                          _isLoading ? 'Signing in...' : 'Sign In',
-                          style: const TextStyle(fontSize: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: PrimaryButton(
+                          label: 'SE CONNECTER',
+                          isLoading: isLoading,
+                          onPressed: _handleLogin,
                         ),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Optional links
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              // TODO: Forgot password screen / dialog
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Forgot password feature coming soon')),
-                              );
-                            },
-                            child: const Text('Forgot password?'),
-                          ),
-                        ],
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
+                const Gap(16),
+                TextButton(
+                  onPressed: () {
+                    // TODO: Implement forgot password
+                  },
+                  child: Text(
+                    'Mot de passe oublié ?', // Translated
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.white,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

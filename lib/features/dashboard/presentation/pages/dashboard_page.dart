@@ -1,322 +1,321 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:chewie/chewie.dart';
-import 'package:video_player/video_player.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:escape_room_admin/models/room.dart';
-import 'package:escape_room_admin/models/screen.dart';
-import 'package:escape_room_admin/models/message.dart';
-import 'package:escape_room_admin/features/dashboard/presentation/pages/room_details_page.dart';
-import 'package:escape_room_admin/features/messages/data/models/gm_message.dart'; // or gm_messages.dart
 
-class DashboardPage extends StatefulWidget {
+import 'package:escape_room_admin/core/theme/app_theme.dart';
+import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
+import 'package:escape_room_admin/shared/widgets/primary_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
+
+// Placeholder Widgets - will be moved to separate files later
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/camera_grid_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/music_control_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/hint_control_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/lighting_control_widget.dart';
+
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/room_focus_view.dart';
+import 'package:escape_room_admin/shared/utils/responsive.dart';
+
+class DashboardPage extends ConsumerStatefulWidget {
   final String scenarioId;
 
-  const DashboardPage({
-    super.key,
-    required this.scenarioId,
-  });
+  const DashboardPage({super.key, required this.scenarioId});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
-  late List<Room> rooms;
+class _DashboardPageState extends ConsumerState<DashboardPage> {
+  // Mock State
+  bool _isPlaying = false;
+  Duration _elapsed = const Duration(minutes: 25, seconds: 34);
+  String? _selectedCameraId;
 
-  @override
-  void initState() {
-    super.initState();
-    rooms = _getMockRoomsForScenario(widget.scenarioId);
-  }
-
-  List<Room> _getMockRoomsForScenario(String scenarioId) {
-    return List.generate(5, (i) {
-      return Room(
-        id: '${widget.scenarioId}-room-$i',
-        name: ['Cell Block A', 'Attic', 'Basement', 'Hallway', 'Courtyard'][i],
-        videoStreamUrls: [
-'http://localhost:8080/stream.m3u8',    
-    ],
-        screens: [
-          Screen(
-            id: 'tv-main',
-            location: 'Main Wall',
-            messages: [], // ← we don't use static messages anymore
-          ),
-        ],
-      );
-    });
-  }
+  // In a real app, these would come from a provider based on scenarioId
+  final String scenarioName = "SAW I"; 
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = Responsive.isMobile(context);
+
     return Scaffold(
+      backgroundColor: AppTheme.primaryBlack,
       appBar: AppBar(
-        title: Text('Monitoring: ${widget.scenarioId}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => setState(() {}),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'global-hint',
-        backgroundColor: const Color.fromARGB(255, 255, 149, 1),
-        icon: const Icon(Icons.send),
-        label: const Text('Send Hint'),
-        onPressed: () => _showSendHintToRoomDialog(context),
-      ),
-      body: rooms.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                int crossAxisCount = 1;
-                if (constraints.maxWidth > 1200) crossAxisCount = 3;
-                else if (constraints.maxWidth > 800) crossAxisCount = 2;
-
-                return MasonryGridView.count(
-                  crossAxisCount: crossAxisCount,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  padding: const EdgeInsets.all(12),
-                  itemCount: rooms.length,
-                  itemBuilder: (context, index) {
-                    return RoomPreviewCard(
-                      room: rooms[index],
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => RoomDetailPage(room: rooms[index]),
-                            fullscreenDialog: true,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-    );
-  }
-
-  // ── Global send hint dialog ──────────────────────────────────────────────
-  void _showSendHintToRoomDialog(BuildContext context) {
-    String? selectedRoomId;
-    final textController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Send Hint'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        backgroundColor: AppTheme.secondaryBlack,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
           children: [
-            DropdownButtonFormField<String>(
-              value: selectedRoomId,
-              hint: const Text('Select room'),
-              isExpanded: true,
-              items: rooms.map((r) => DropdownMenuItem(
-                    value: r.id,
-                    child: Text(r.name),
-                  )).toList(),
-              onChanged: (val) => selectedRoomId = val,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: textController,
-              decoration: const InputDecoration(
-                labelText: 'Hint message',
-                border: OutlineInputBorder(),
+            if (_selectedCameraId != null)
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                onPressed: () => setState(() => _selectedCameraId = null),
+                tooltip: 'Retour à la grille',
               ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final text = textController.text.trim();
-              if (text.isEmpty || selectedRoomId == null) return;
-
-              GmMessages().addMessage(selectedRoomId!, text);
-              Navigator.pop(dialogContext);
-              setState(() {}); // refresh counts
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Hint sent')),
-              );
-            },
-            child: const Text('Send'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Quick send for specific room ─────────────────────────────────────────
-  void _showQuickSendForThisRoom(BuildContext context, String roomId, String roomName) {
-    final textController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Hint to $roomName'),
-        content: TextField(
-          controller: textController,
-          decoration: const InputDecoration(
-            labelText: 'Message',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 4,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final text = textController.text.trim();
-              if (text.isEmpty) return;
-
-              GmMessages().addMessage(roomId, text);
-              Navigator.pop(dialogContext);
-              setState(() {});
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Sent to $roomName')),
-              );
-            },
-            child: const Text('Send'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── RoomPreviewCard with targeted hint button ────────────────────────────────
-class RoomPreviewCard extends StatefulWidget {
-  final Room room;
-  final VoidCallback onTap;
-
-  const RoomPreviewCard({
-    super.key,
-    required this.room,
-    required this.onTap,
-  });
-
-  @override
-  State<RoomPreviewCard> createState() => _RoomPreviewCardState();
-}
-
-class _RoomPreviewCardState extends State<RoomPreviewCard> {
-  VideoPlayerController? _controller;
-  ChewieController? _chewieController;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.room.videoStreamUrls.isNotEmpty) {
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.room.videoStreamUrls.first),
-      )..initialize().then((_) {
-          if (mounted) {
-            setState(() {});
-            _controller?.setLooping(true);
-            _controller?.setVolume(0.0);
-            _controller?.play();
-          }
-        });
-
-      _chewieController = ChewieController(
-        videoPlayerController: _controller!,
-        autoPlay: false,
-        looping: true,
-        showControls: false,
-        aspectRatio: 16 / 9,
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    _chewieController?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hasVideo = _controller?.value.isInitialized ?? false;
-
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Card(
-        elevation: 3,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: hasVideo
-                  ? Chewie(controller: _chewieController!)
-                  : Container(
-                      color: Colors.grey[900],
-                      child: const Icon(Icons.videocam_off, size: 48, color: Colors.white54),
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    widget.room.name,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    maxLines: 1,
+                    _selectedCameraId != null 
+                        ? 'FOCUS : ${_selectedCameraId}'
+                        : scenarioName.toUpperCase(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                      fontSize: isMobile ? 14 : 18,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    '${widget.room.videoStreamUrls.length} camera(s) • '
-                    '${GmMessages().getCount(widget.room.id)} hints',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          final state = context.findAncestorStateOfType<_DashboardPageState>();
-                          state?._showQuickSendForThisRoom(context, widget.room.id, widget.room.name);
-                        },
-                        icon: const Icon(Icons.send, size: 16),
-                        label: const Text('Hint', style: TextStyle(fontSize: 12)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          side: BorderSide(color: Colors.yellowAccent.withOpacity(0.7)),
-                          foregroundColor: Colors.yellowAccent,
-                          minimumSize: const Size(0, 32),
-                        ),
-                      ),
-                    ],
+                    'ID: ${widget.scenarioId}',
+                    style: const TextStyle(
+                      color: AppTheme.primaryRed,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
+            if (!isMobile) ...[
+              const Gap(24),
+              _StatusBadge(isPlaying: _isPlaying),
+            ],
+            const Gap(16),
+            _DigitalTimer(duration: _elapsed, isSmall: isMobile),
           ],
         ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16, vertical: 8),
+            child: _StopButton(onPressed: () {}, isSmall: isMobile),
+          ),
+        ],
+      ),
+      drawer: const AppDrawer(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 1.5,
+            colors: [
+              AppTheme.secondaryBlack.withOpacity(0.5),
+              AppTheme.primaryBlack,
+            ],
+          ),
+        ),
+        child: _selectedCameraId != null 
+            ? RoomFocusView(
+                cameraId: _selectedCameraId!,
+                isMobile: isMobile,
+              )
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
+                child: isMobile 
+                  ? Column(
+                      children: [
+                        if (isMobile) ...[
+                          _StatusBadge(isPlaying: _isPlaying),
+                          const Gap(24),
+                        ],
+                        CameraGridWidget(
+                          onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                        ),
+                        const Gap(24),
+                        const MusicControlWidget(),
+                        const Gap(20),
+                        const HintControlWidget(),
+                        const Gap(20),
+                        const LightingControlWidget(),
+                        const Gap(40),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: CameraGridWidget(
+                            onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                          ),
+                        ),
+                        const Gap(24),
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            children: const [
+                              MusicControlWidget(),
+                              Gap(20),
+                              HintControlWidget(),
+                              Gap(20),
+                              LightingControlWidget(),
+                              Gap(40),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+              ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final bool isPlaying;
+  const _StatusBadge({required this.isPlaying});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isPlaying ? AppTheme.primaryRed.withOpacity(0.1) : AppTheme.successGreen.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: isPlaying ? AppTheme.primaryRed : AppTheme.successGreen,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isPlaying ? AppTheme.primaryRed : AppTheme.successGreen,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: (isPlaying ? AppTheme.primaryRed : AppTheme.successGreen).withOpacity(0.5),
+                  blurRadius: 4,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ),
+          const Gap(8),
+          Text(
+            isPlaying ? 'SESSION EN COURS' : 'PRÊT POUR LANCEMENT',
+            style: TextStyle(
+              color: isPlaying ? AppTheme.primaryRed : AppTheme.successGreen,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DigitalTimer extends StatelessWidget {
+  final Duration duration;
+  final bool isSmall;
+  const _DigitalTimer({required this.duration, this.isSmall = false});
+
+  String _format(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String h = twoDigits(d.inHours);
+    String m = twoDigits(d.inMinutes.remainder(60));
+    String s = twoDigits(d.inSeconds.remainder(60));
+    return "$h:$m:$s";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.grayBorder, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryRed.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Text(
+        _format(duration),
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: isSmall ? 18 : 28,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.primaryRed,
+          letterSpacing: isSmall ? 1 : 2,
+        ),
+      ),
+    );
+  }
+}
+
+class _StopButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final bool isSmall;
+  const _StopButton({required this.onPressed, this.isSmall = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 16),
+          decoration: BoxDecoration(
+            color: AppTheme.secondaryRed,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.secondaryRed.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.stop_rounded, color: Colors.white, size: isSmall ? 18 : 20),
+              if (!isSmall) ...[
+                const Gap(8),
+                const Text(
+                  'ARRÊTER',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _ControlPlaceholder extends StatelessWidget {
+  final String title;
+  const _ControlPlaceholder({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Text(title, style: const TextStyle(color: AppTheme.grayText)),
       ),
     );
   }

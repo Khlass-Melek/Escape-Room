@@ -1,22 +1,22 @@
+import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/router.dart';
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/messages/presentation/message_page.dart';
 // import 'features/surveillance/presentation/surveillance_page.dart';
 
-class EscapeRoomApp extends StatelessWidget {
+class EscapeRoomApp extends ConsumerWidget {
   const EscapeRoomApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
     return MaterialApp.router(
-      title: 'Escape Room Admin',
+      title: 'THE ROOM Admin',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      routerConfig: router, // ← this replaces home: & Navigator
+      theme: AppTheme.darkTheme,
+      routerConfig: router,
     );
   }
 }
