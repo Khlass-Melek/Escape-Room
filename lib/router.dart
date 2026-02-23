@@ -4,6 +4,8 @@ import 'package:escape_room_admin/features/dashboard/presentation/pages/dashboar
 import 'package:escape_room_admin/features/dashboard/presentation/pages/scenarios_list_page.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:escape_room_admin/features/settings/presentation/pages/scenario_settings_page.dart';
+import 'package:escape_room_admin/features/admin/presentation/pages/sub_admin_management_page.dart';
+import 'package:escape_room_admin/features/admin/presentation/pages/enigma_management_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +25,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (loggedIn && goingToLogin) {
+        return '/dashboard-home';
+      }
+
+      if ((state.uri.path == '/admin/sub-admins' || state.uri.path == '/admin/enigmas') && authState.user?.role != 'super_admin') {
         return '/dashboard-home';
       }
 
@@ -51,6 +57,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/scenarios',
         builder: (context, state) => const ScenarioSettingsPage(),
+      ),
+      GoRoute(
+        path: '/admin/sub-admins',
+        builder: (context, state) => const SubAdminManagementPage(),
+      ),
+      GoRoute(
+        path: '/admin/enigmas',
+        builder: (context, state) => const EnigmaManagementPage(),
       ),
     ],
   );

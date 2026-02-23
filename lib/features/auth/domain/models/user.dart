@@ -2,7 +2,7 @@
 class User {
   final String id;
   final String username;
-  final String role; // 'super_admin', 'game_master', 'viewer'
+  final String role; // 'super_admin', 'sous_admin', 'game_master', 'viewer'
   final String? profilePicture;
 
   const User({
@@ -11,6 +11,20 @@ class User {
     required this.role,
     this.profilePicture,
   });
+
+  User copyWith({
+    String? id,
+    String? username,
+    String? role,
+    String? profilePicture,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      role: role ?? this.role,
+      profilePicture: profilePicture ?? this.profilePicture,
+    );
+  }
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(

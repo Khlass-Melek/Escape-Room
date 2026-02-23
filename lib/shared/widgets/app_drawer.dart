@@ -55,6 +55,22 @@ class AppDrawer extends ConsumerWidget {
                   
                   const Gap(20),
                   _MenuSectionHeader(title: 'CONFIGURATION'),
+                  if (user?.role == 'super_admin') ...[
+                    _DrawerItem(
+                      icon: Icons.admin_panel_settings_outlined,
+                      selectedIcon: Icons.admin_panel_settings,
+                      label: 'Gestion des Sous-Admins',
+                      isSelected: currentRoute == '/admin/sub-admins',
+                      onTap: () => context.go('/admin/sub-admins'),
+                    ),
+                    _DrawerItem(
+                      icon: Icons.extension_outlined,
+                      selectedIcon: Icons.extension,
+                      label: 'Gestion des Énigmes',
+                      isSelected: currentRoute == '/admin/enigmas',
+                      onTap: () => context.go('/admin/enigmas'),
+                    ),
+                  ],
                   _DrawerItem(
                     icon: Icons.settings_applications_outlined,
                     selectedIcon: Icons.settings_applications,
