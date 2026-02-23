@@ -5,6 +5,7 @@ class Enigma {
   final String description;
   final String difficulty; // e.g., 'Facile', 'Moyen', 'Difficile'
   final bool isActive;
+  final Map<String, dynamic> configuration;
 
   const Enigma({
     required this.id,
@@ -13,6 +14,7 @@ class Enigma {
     required this.description,
     required this.difficulty,
     this.isActive = true,
+    this.configuration = const {},
   });
 
   Enigma copyWith({
@@ -22,6 +24,7 @@ class Enigma {
     String? description,
     String? difficulty,
     bool? isActive,
+    Map<String, dynamic>? configuration,
   }) {
     return Enigma(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class Enigma {
       description: description ?? this.description,
       difficulty: difficulty ?? this.difficulty,
       isActive: isActive ?? this.isActive,
+      configuration: configuration ?? this.configuration,
     );
   }
 
@@ -41,6 +45,7 @@ class Enigma {
       description: json['description'] as String,
       difficulty: json['difficulty'] as String,
       isActive: json['isActive'] as bool? ?? true,
+      configuration: json['configuration'] as Map<String, dynamic>? ?? {},
     );
   }
 
@@ -52,6 +57,7 @@ class Enigma {
       'description': description,
       'difficulty': difficulty,
       'isActive': isActive,
+      'configuration': configuration,
     };
   }
 }

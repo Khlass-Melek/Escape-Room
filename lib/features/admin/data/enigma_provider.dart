@@ -50,7 +50,7 @@ class EnigmaNotifier extends Notifier<EnigmaState> {
     );
   }
 
-  void addEnigma(String name, String type, String description, String difficulty, bool isActive) {
+  void addEnigma(String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) {
     final newEnigma = Enigma(
       id: _uuid.v4(),
       name: name,
@@ -58,6 +58,7 @@ class EnigmaNotifier extends Notifier<EnigmaState> {
       description: description,
       difficulty: difficulty,
       isActive: isActive,
+      configuration: configuration,
     );
 
     state = state.copyWith(
@@ -65,7 +66,7 @@ class EnigmaNotifier extends Notifier<EnigmaState> {
     );
   }
 
-  void updateEnigma(String id, String name, String type, String description, String difficulty, bool isActive) {
+  void updateEnigma(String id, String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) {
     final updatedEnigmas = state.enigmas.map((enigma) {
       if (enigma.id == id) {
         return enigma.copyWith(
@@ -74,6 +75,7 @@ class EnigmaNotifier extends Notifier<EnigmaState> {
           description: description,
           difficulty: difficulty,
           isActive: isActive,
+          configuration: configuration,
         );
       }
       return enigma;

@@ -24,6 +24,7 @@ class EnigmaManagementPage extends ConsumerWidget {
             result['description'] as String,
             result['difficulty'] as String,
             result['isActive'] as bool,
+            result['configuration'] as Map<String, dynamic>,
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -47,6 +48,7 @@ class EnigmaManagementPage extends ConsumerWidget {
             result['description'] as String,
             result['difficulty'] as String,
             result['isActive'] as bool,
+            result['configuration'] as Map<String, dynamic>,
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
