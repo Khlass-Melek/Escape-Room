@@ -39,26 +39,39 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
     super.dispose();
   }
 
+  String? _lastPlayedUrl;
+
   void _handlePlayback(AudioState state) async {
+    final currentTrack = state.currentTrack;
+    
     if (state.isPlaying) {
-      final currentTrack = state.currentTrack;
       if (currentTrack != null) {
-        // In a real app, this filename would be a URL or asset path
-        // For now, we'll try to find it in assets or use a mock URL if it's external
-        // If the filename starts with http, use SourceUrl, else AssetSource
-        if (currentTrack.filename.startsWith('http')) {
-          await _audioPlayer.play(UrlSource(currentTrack.filename));
-        } else {
-          try {
-            await _audioPlayer.play(AssetSource(currentTrack.filename));
-          } catch (e) {
-            debugPrint('Error playing asset: $e');
+        final String newUrl = currentTrack.filename;
+        
+        // Only call play if the track has actually changed
+        if (newUrl != _lastPlayedUrl) {
+          _lastPlayedUrl = newUrl;
+          if (newUrl.startsWith('http')) {
+            await _audioPlayer.play(UrlSource(newUrl));
+          } else {
+            try {
+              await _audioPlayer.play(AssetSource(newUrl));
+            } catch (e) {
+              debugPrint('Error playing asset: $e');
+            }
           }
+        } else if (_audioPlayer.state == PlayerState.paused) {
+          // If it was paused but the track is the same, just resume
+          await _audioPlayer.resume();
         }
       }
     } else {
-      await _audioPlayer.pause();
+      if (_audioPlayer.state == PlayerState.playing) {
+        await _audioPlayer.pause();
+      }
     }
+    
+    // Always update volume without restarting playback
     await _audioPlayer.setVolume(state.volume);
   }
 

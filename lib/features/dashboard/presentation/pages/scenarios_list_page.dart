@@ -1,5 +1,6 @@
 
 import 'package:escape_room_admin/core/theme/app_theme.dart';
+import 'package:escape_room_admin/features/dashboard/data/game_session_provider.dart';
 import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ class ScenariosListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scenariosAsync = ref.watch(scenarioProvider);
+    final session = ref.watch(gameSessionProvider);
     final bool isMobile = Responsive.isMobile(context);
 
     return Scaffold(
@@ -71,14 +73,16 @@ class ScenariosListPage extends ConsumerWidget {
                         crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
                         mainAxisSpacing: isMobile ? 20 : 32,
                         crossAxisSpacing: isMobile ? 20 : 32,
-                        childAspectRatio: isMobile ? 1.4 : 1.65,
+                        childAspectRatio: isMobile ? 1.1 : 1.65,
                       ),
                       itemCount: scenarios.length,
                       itemBuilder: (context, index) {
                         final scenario = scenarios[index];
+                        // A scenario is "EN COURS" only if the live session says so
+                        final isSessionActive = session.isRunning && session.scenarioId == scenario.id;
                         return _ScenarioCard(
                           name: scenario.name,
-                          isActive: scenario.isActive,
+                          isSessionActive: isSessionActive,
                           players: scenario.players,
                           time: '${scenario.estimatedTime} min',
                           image: scenario.image,
@@ -101,7 +105,7 @@ class ScenariosListPage extends ConsumerWidget {
 
 class _ScenarioCard extends StatefulWidget {
   final String name;
-  final bool isActive;
+  final bool isSessionActive;
   final String players;
   final String time;
   final String image;
@@ -109,7 +113,7 @@ class _ScenarioCard extends StatefulWidget {
 
   const _ScenarioCard({
     required this.name,
-    required this.isActive,
+    required this.isSessionActive,
     required this.players,
     required this.time,
     required this.image,
@@ -180,7 +184,7 @@ class _ScenarioCardState extends State<_ScenarioCard> {
 
                 // Content
                 Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(Responsive.isMobile(context) ? 12.0 : 24.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,13 +194,13 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: widget.isActive ? AppTheme.primaryRed : AppTheme.successGreen,
+                              color: widget.isSessionActive ? AppTheme.primaryRed : AppTheme.successGreen,
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: (widget.isActive ? AppTheme.primaryRed : AppTheme.successGreen).withOpacity(0.4),
+                                  color: (widget.isSessionActive ? AppTheme.primaryRed : AppTheme.successGreen).withOpacity(0.4),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -204,16 +208,16 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                             child: Row(
                               children: [
                                 Icon(
-                                  widget.isActive ? Icons.emergency_rounded : Icons.check_circle_rounded,
-                                  size: 10,
+                                  widget.isSessionActive ? Icons.emergency_rounded : Icons.check_circle_rounded,
+                                  size: 8,
                                   color: Colors.white,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 4),
                                 Text(
-                                  widget.isActive ? 'EN COURS' : 'DISPONIBLE',
+                                  widget.isSessionActive ? 'EN COURS' : 'DISPONIBLE',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 9,
+                                    fontSize: 8,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1,
                                   ),
@@ -230,46 +234,49 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                         children: [
                           Text(
                             widget.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 24,
+                              fontSize: Responsive.isMobile(context) ? 18 : 24,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1,
                               height: 1.1,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 12),
+                          Gap(Responsive.isMobile(context) ? 4 : 12),
                           Row(
                             children: [
                               _InfoIcon(icon: Icons.people_outline_rounded, label: widget.players),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: 12),
                               _InfoIcon(icon: Icons.timer_outlined, label: widget.time),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          AnimatedOpacity(
-                            opacity: _isHovered ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 200),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'VISUALISER LA SALLE',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryBlack,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                    letterSpacing: 1,
+                          Gap(Responsive.isMobile(context) ? 8 : 16),
+                          if (!Responsive.isMobile(context))
+                            AnimatedOpacity(
+                              opacity: _isHovered ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'VISUALISER LA SALLE',
+                                    style: TextStyle(
+                                      color: AppTheme.primaryBlack,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],

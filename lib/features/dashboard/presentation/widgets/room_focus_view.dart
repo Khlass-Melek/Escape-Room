@@ -35,12 +35,16 @@ class _RoomFocusViewState extends State<RoomFocusView> {
   Future<void> _fetchLinkedEnigma() async {
     final client = supa.Supabase.instance.client;
     try {
-      // Improved query: join puzzles table and filter by scenario and camera IP
+      debugPrint('[RoomFocusView] Fetching enigma for scenario=${widget.scenarioId} camera=${widget.cameraId}');
+      
+      // First: try to find an enigma linked to this exact camera IP
       final res = await client
           .from('scenario_puzzles')
           .select('*, puzzles(*)')
           .eq('scenario_id', widget.scenarioId)
           .eq('camera_ip', widget.cameraId);
+      
+      debugPrint('[RoomFocusView] camera_ip query returned ${res?.length ?? 0} rows: $res');
       
       if (res != null && res.isNotEmpty) {
         final firstMatch = res.first;
@@ -52,9 +56,31 @@ class _RoomFocusViewState extends State<RoomFocusView> {
           return;
         }
       }
+
+      // Fallback: if camera_ip column doesn't exist yet or no result, 
+      // try getting any puzzle linked to this scenario
+      debugPrint('[RoomFocusView] Falling back to scenario-only query');
+      final fallbackRes = await client
+          .from('scenario_puzzles')
+          .select('*, puzzles(*)')
+          .eq('scenario_id', widget.scenarioId);
+      
+      debugPrint('[RoomFocusView] fallback query returned ${fallbackRes?.length ?? 0} rows: $fallbackRes');
+
+      if (fallbackRes != null && fallbackRes.isNotEmpty) {
+        final firstMatch = fallbackRes.first;
+        if (firstMatch['puzzles'] != null) {
+          setState(() {
+            _linkedEnigma = firstMatch['puzzles'];
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+      
       setState(() => _isLoading = false);
     } catch (e) {
-      debugPrint('Error fetching linked enigma: $e');
+      debugPrint('[RoomFocusView] Error fetching linked enigma: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -359,13 +385,16 @@ class _ActuatorButton extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 20),
             const Gap(12),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -428,13 +457,17 @@ class _ConfigurationTerminalState extends State<_ConfigurationTerminal> {
           else
             ..._config.entries.map((entry) {
               if (entry.value is num) {
+                final rawVal = (entry.value as num).toDouble();
+                // Dynamically set max to at least the value's magnitude so slider never crashes
+                final dynamicMax = rawVal > 100 ? (rawVal * 1.5).ceilToDouble() : 100.0;
+                final clampedVal = rawVal.clamp(0.0, dynamicMax).toDouble();
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: _ConfigSlider(
                     label: entry.key.toUpperCase(),
-                    value: (entry.value as num).toDouble(),
+                    value: clampedVal,
                     min: 0,
-                    max: 100,
+                    max: dynamicMax,
                     onChanged: (val) => setState(() => _config[entry.key] = val),
                   ),
                 );

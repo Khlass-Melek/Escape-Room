@@ -92,7 +92,7 @@ class DashboardHomePage extends ConsumerWidget {
                         crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
                         mainAxisSpacing: isMobile ? 20 : 24,
                         crossAxisSpacing: isMobile ? 20 : 24,
-                        childAspectRatio: isMobile ? 1.6 : 1.7,
+                        childAspectRatio: isMobile ? 1.1 : 1.7,
                       ),
                       itemCount: scenarios.length,
                       itemBuilder: (context, index) {
@@ -226,7 +226,7 @@ class _DashboardCard extends StatelessWidget {
               ),
             ),
             Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(Responsive.isMobile(context) ? 12.0 : 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -236,9 +236,9 @@ class _DashboardCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.white,
-                          fontSize: 18,
+                          fontSize: Responsive.isMobile(context) ? 14 : 18,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1,
                         ),
@@ -249,10 +249,12 @@ class _DashboardCard extends StatelessWidget {
                     if (active) const _LivePulser(),
                   ],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: Responsive.isMobile(context) ? 12 : 24),
                 const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
                     _StatBlock(
                       label: 'Taux de succès',

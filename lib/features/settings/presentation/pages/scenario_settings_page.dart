@@ -299,11 +299,11 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: Responsive.isMobile(context) ? 2 : 3,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: 1.5,
+                      childAspectRatio: Responsive.isMobile(context) ? 1.2 : 1.5,
                     ),
                     itemCount: _availableImages.length,
                     itemBuilder: (context, index) {
@@ -577,6 +577,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                         loading: () => const Center(child: CircularProgressIndicator()),
                         error: (e, s) => Text('Erreur: $e'),
                         data: (audioState) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...audioState.tracks.map((track) => _buildListItem(
                               label: '${track.title} (${track.filename})',
@@ -584,11 +585,12 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                               onDelete: () => ref.read(audioProvider.notifier).deleteTrack(track.id),
                             )),
                             const Gap(16),
+                            // Manual add row
                             Row(
                               children: [
                                 Expanded(child: CustomTextField(controller: _audioTitleController, label: 'TITRE', hint: 'Ambiance horreur')),
                                 const Gap(12),
-                                Expanded(child: CustomTextField(controller: _audioFileController, label: 'FICHIER', hint: 'saw_theme.mp3')),
+                                Expanded(child: CustomTextField(controller: _audioFileController, label: 'FICHIER / URL', hint: 'saw_theme.mp3 ou https://...')),
                                 const Gap(12),
                                 _CircleAddButton(onPressed: () {
                                   if (_audioTitleController.text.isNotEmpty && _audioFileController.text.isNotEmpty) {
@@ -598,6 +600,22 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                                   }
                                 }),
                               ],
+                            ),
+                            const Gap(16),
+                            // Supabase bucket import button
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.cloud_download_outlined, size: 18),
+                                label: const Text('IMPORTER DEPUIS SUPABASE STORAGE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.primaryRed,
+                                  side: BorderSide(color: AppTheme.primaryRed.withOpacity(0.5)),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                onPressed: () => _showBucketImportDialog(context, ref),
+                              ),
                             ),
                           ],
                         ),
@@ -643,10 +661,263 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                   }
                 },
               ),
+              if (_editingScenarioId != null) ...[
+                const Gap(24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showDeleteConfirmation(context),
+                    icon: const Icon(Icons.delete_forever_rounded, color: AppTheme.primaryRed),
+                    label: const Text(
+                      'SUPPRIMER CE SCÉNARIO',
+                      style: TextStyle(
+                        color: AppTheme.primaryRed,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppTheme.primaryRed, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: AppTheme.primaryRed.withOpacity(0.05),
+                    ),
+                  ),
+                ),
+              ],
               const Gap(48),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showBucketImportDialog(BuildContext context, WidgetRef ref) {
+    final bucketController = TextEditingController(text: 'audio');
+    final folderController = TextEditingController();
+    bool isScanning = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: AppTheme.secondaryBlack,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.cloud_download_outlined, color: AppTheme.primaryRed, size: 20),
+              Gap(12),
+              Text('IMPORT DEPUIS SUPABASE', style: TextStyle(color: AppTheme.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Scannez votre bucket Storage pour importer tous les fichiers audio en une fois.',
+                style: TextStyle(color: AppTheme.grayText, fontSize: 12),
+              ),
+              const Gap(20),
+              TextField(
+                controller: bucketController,
+                style: const TextStyle(color: AppTheme.white),
+                decoration: InputDecoration(
+                  labelText: 'NOM DU BUCKET',
+                  labelStyle: const TextStyle(color: AppTheme.grayText, fontSize: 11),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.grayBorder)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primaryRed)),
+                  fillColor: AppTheme.primaryBlack,
+                  filled: true,
+                ),
+              ),
+              const Gap(12),
+              TextField(
+                controller: folderController,
+                style: const TextStyle(color: AppTheme.white),
+                decoration: InputDecoration(
+                  labelText: 'SOUS-DOSSIER (OPTIONNEL)',
+                  labelStyle: const TextStyle(color: AppTheme.grayText, fontSize: 11),
+                  hintText: 'Ex: saw1',
+                  hintStyle: TextStyle(color: AppTheme.grayText.withOpacity(0.5)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.grayBorder)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primaryRed)),
+                  fillColor: AppTheme.primaryBlack,
+                  filled: true,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('ANNULER', style: TextStyle(color: AppTheme.grayText)),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isScanning ? AppTheme.grayBorder : AppTheme.primaryRed,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: isScanning ? null : () async {
+                setState(() => isScanning = true);
+                final bucket = bucketController.text.trim();
+                final folder = folderController.text.trim();
+                
+                try {
+                  final foundTracks = await ref.read(audioProvider.notifier).scanBucket(
+                    bucketName: bucket.isEmpty ? 'audio' : bucket,
+                    folderPath: folder.isEmpty ? null : folder,
+                  );
+                  
+                  if (!context.mounted) return;
+                  Navigator.of(ctx).pop(); // Close scan dialog
+                  
+                  if (foundTracks.isEmpty) {
+                    _showNoFilesDialog(context);
+                  } else {
+                    _showConfirmImportDialog(context, ref, foundTracks);
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('ERREUR DE CONNEXION : $e'),
+                      backgroundColor: AppTheme.primaryRed,
+                      behavior: SnackBarBehavior.floating,
+                    ));
+                  }
+                }
+              },
+              child: isScanning 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('SCANNER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNoFilesDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.secondaryBlack,
+        title: const Text('AUCUN FICHIER TROUVÉ', style: TextStyle(color: AppTheme.white, fontSize: 14)),
+        content: const Text(
+          'Aucun fichier audio n\'a été détecté dans ce bucket ou dossier. Vérifiez que vos fichiers ont des extensions valides (.mp3, .wav) et que le bucket est public.',
+          style: TextStyle(color: AppTheme.grayText, fontSize: 13),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmImportDialog(BuildContext context, WidgetRef ref, Map<String, String> foundTracks) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.secondaryBlack,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('${foundTracks.length} PISTES DÉTECTÉES', style: const TextStyle(color: AppTheme.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Les morceaux suivants vont être ajoutés au scénario :', style: TextStyle(color: AppTheme.grayText, fontSize: 12)),
+              const Gap(16),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: foundTracks.length > 5 ? 5 : foundTracks.length,
+                  itemBuilder: (c, i) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text('• ${foundTracks.keys.elementAt(i)}', style: const TextStyle(color: AppTheme.white, fontSize: 11)),
+                  ),
+                ),
+              ),
+              if (foundTracks.length > 5)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('+ ${foundTracks.length - 5} autres...', style: const TextStyle(color: AppTheme.primaryRed, fontSize: 10, fontWeight: FontWeight.bold)),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('ANNULER', style: TextStyle(color: AppTheme.grayText)),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.successGreen, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final count = await ref.read(audioProvider.notifier).importTracks(foundTracks);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('$count PISTES IMPORTÉES AVEC SUCCÈS !'),
+                  backgroundColor: AppTheme.successGreen,
+                  behavior: SnackBarBehavior.floating,
+                ));
+              }
+            },
+            child: const Text('IMPORTER TOUT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.secondaryBlack,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppTheme.primaryRed),
+            Gap(12),
+            Text('SUPPRESSION', style: TextStyle(color: AppTheme.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Êtes-vous sûr de vouloir supprimer définitivement le scénario "${_nameController.text}" ? Cette action est irréversible.',
+          style: const TextStyle(color: AppTheme.grayText),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('ANNULER', style: TextStyle(color: AppTheme.grayText)),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryRed,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              if (_editingScenarioId != null) {
+                await ref.read(scenarioProvider.notifier).deleteScenario(_editingScenarioId!);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('SCÉNARIO SUPPRIMÉ AVEC SUCCÈS'),
+                      backgroundColor: AppTheme.primaryRed,
+                    ),
+                  );
+                  setState(() => _currentView = _SettingsView.selection);
+                }
+              }
+            },
+            child: const Text('SUPPRIMER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
@@ -796,32 +1067,34 @@ class _ScenarioEditCardState extends State<_ScenarioEditCard> {
 
                 // Content
                 Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(Responsive.isMobile(context) ? 12.0 : 24.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.name.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: Responsive.isMobile(context) ? 16 : 20,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const Gap(8),
+                      Gap(Responsive.isMobile(context) ? 4 : 8),
                       Text(
                         widget.description,
                         style: TextStyle(
                           color: AppTheme.white.withOpacity(0.6),
-                          fontSize: 11,
+                          fontSize: Responsive.isMobile(context) ? 10 : 11,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Gap(20),
+                      Gap(Responsive.isMobile(context) ? 12 : 20),
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
