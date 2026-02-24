@@ -1,31 +1,83 @@
-
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/shared/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:escape_room_admin/features/admin/data/enigma_provider.dart';
 import 'package:gap/gap.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 
-class RoomFocusView extends StatelessWidget {
+class RoomFocusView extends StatefulWidget {
+  final String scenarioId;
   final String cameraId;
   final bool isMobile;
 
   const RoomFocusView({
     super.key,
+    required this.scenarioId,
     required this.cameraId,
     required this.isMobile,
   });
 
   @override
+  State<RoomFocusView> createState() => _RoomFocusViewState();
+}
+
+class _RoomFocusViewState extends State<RoomFocusView> {
+  Map<String, dynamic>? _linkedEnigma;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLinkedEnigma();
+  }
+
+  Future<void> _fetchLinkedEnigma() async {
+    final client = supa.Supabase.instance.client;
+    try {
+      // Improved query: join puzzles table and filter by scenario and camera IP
+      final res = await client
+          .from('scenario_puzzles')
+          .select('*, puzzles(*)')
+          .eq('scenario_id', widget.scenarioId)
+          .eq('camera_ip', widget.cameraId);
+      
+      if (res != null && res.isNotEmpty) {
+        final firstMatch = res.first;
+        if (firstMatch['puzzles'] != null) {
+          setState(() {
+            _linkedEnigma = firstMatch['puzzles'];
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+      setState(() => _isLoading = false);
+    } catch (e) {
+      debugPrint('Error fetching linked enigma: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isMobile) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (widget.isMobile) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _LargeCameraFeed(cameraId: cameraId),
+            _LargeCameraFeed(cameraId: widget.cameraId),
             const Gap(24),
-            _EnigmaActuators(),
-            const Gap(24),
-            _ConfigurationTerminal(),
+            if (_linkedEnigma != null) ...[
+              _EnigmaActuators(enigma: _linkedEnigma!),
+              const Gap(24),
+              _ConfigurationTerminal(enigma: _linkedEnigma!),
+            ] else 
+              _NoEnigmaPlaceholder(),
           ],
         ),
       );
@@ -39,7 +91,7 @@ class RoomFocusView extends StatelessWidget {
           // Left: Camera
           Expanded(
             flex: 3,
-            child: _LargeCameraFeed(cameraId: cameraId),
+            child: _LargeCameraFeed(cameraId: widget.cameraId),
           ),
           const Gap(24),
           // Right: Controls & Config
@@ -48,9 +100,12 @@ class RoomFocusView extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _EnigmaActuators(),
-                  const Gap(24),
-                  _ConfigurationTerminal(),
+                  if (_linkedEnigma != null) ...[
+                    _EnigmaActuators(enigma: _linkedEnigma!),
+                    const Gap(24),
+                    _ConfigurationTerminal(enigma: _linkedEnigma!),
+                  ] else 
+                    _NoEnigmaPlaceholder(),
                 ],
               ),
             ),
@@ -60,6 +115,32 @@ class RoomFocusView extends StatelessWidget {
     );
   }
 }
+
+class _NoEnigmaPlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryBlack,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.grayBorder.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.extension_off_rounded, color: AppTheme.grayText.withOpacity(0.5), size: 48),
+          const Gap(16),
+          const Text(
+            "IL N'Y A PAS D'ÉNIGME DANS CETTE CHAMBRE",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppTheme.grayText, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _LargeCameraFeed extends StatelessWidget {
   final String cameraId;
@@ -186,8 +267,14 @@ class _TechTag extends StatelessWidget {
 }
 
 class _EnigmaActuators extends StatelessWidget {
+  final Map<String, dynamic> enigma;
+  const _EnigmaActuators({required this.enigma});
+
   @override
   Widget build(BuildContext context) {
+    final String type = enigma['type']?.toString().toUpperCase() ?? 'INCONNU';
+    final String name = enigma['name']?.toString().toUpperCase() ?? 'ÉNIGME';
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -202,38 +289,40 @@ class _EnigmaActuators extends StatelessWidget {
             children: [
               const Icon(Icons.bolt_rounded, color: AppTheme.warningOrange, size: 20),
               const Gap(12),
-              const Text(
-                'ACTIONNEURS SYSTÈME',
-                style: TextStyle(
-                  color: AppTheme.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  'ACTIONNEURS : $name',
+                  style: const TextStyle(
+                    color: AppTheme.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
+          const Gap(8),
+          Text(
+            'MODULE : $type',
+            style: const TextStyle(color: AppTheme.grayText, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
           const Gap(24),
           _ActuatorButton(
-            label: 'OUVRIR PORTE MAGNÉTIQUE',
+            label: 'DÉVERROUILLER SYSTÈME',
             icon: Icons.lock_open_rounded,
             color: AppTheme.primaryRed,
             onPressed: () {},
           ),
           const Gap(12),
           _ActuatorButton(
-            label: 'DÉCLENCHER MACHINE À FUMÉE',
-            icon: Icons.cloud_rounded,
-            color: Colors.blue,
-            onPressed: () {},
-          ),
-          const Gap(12),
-          _ActuatorButton(
-            label: 'RESET ÉNIGME DES SYMBOLES',
+            label: 'RÉINITIALISER MODULE',
             icon: Icons.refresh_rounded,
             color: AppTheme.successGreen,
             onPressed: () {},
           ),
+          // We could add type-specific actuators here
         ],
       ),
     );
@@ -287,13 +376,21 @@ class _ActuatorButton extends StatelessWidget {
 }
 
 class _ConfigurationTerminal extends StatefulWidget {
+  final Map<String, dynamic> enigma;
+  const _ConfigurationTerminal({required this.enigma});
+
   @override
   State<_ConfigurationTerminal> createState() => _ConfigurationTerminalState();
 }
 
 class _ConfigurationTerminalState extends State<_ConfigurationTerminal> {
-  double _threshold = 75.0;
-  int _timer = 60;
+  late Map<String, dynamic> _config;
+
+  @override
+  void initState() {
+    super.initState();
+    _config = Map<String, dynamic>.from(widget.enigma['config'] ?? {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,30 +420,78 @@ class _ConfigurationTerminalState extends State<_ConfigurationTerminal> {
             ],
           ),
           const Gap(24),
-          _ConfigSlider(
-            label: 'SEUIL CAPTEUR SONORE (dB)',
-            value: _threshold,
-            min: 0,
-            max: 120,
-            onChanged: (val) => setState(() => _threshold = val),
-          ),
-          const Gap(24),
-          _ConfigInput(
-            label: 'TEMPS LIMITE ÉNIGME (SEC)',
-            value: _timer.toString(),
-            onChanged: (val) => setState(() => _timer = int.tryParse(val) ?? _timer),
-          ),
-          const Gap(32),
-          PrimaryButton(
-            label: 'APPLIQUER MODIFICATIONS',
-            icon: Icons.save_rounded,
-            onPressed: () {},
+          if (_config.isEmpty)
+            const Text(
+              "AUCUNE VARIABLE DE CONFIGURATION POUR CE MODULE",
+              style: TextStyle(color: AppTheme.grayText, fontSize: 10, fontWeight: FontWeight.bold),
+            )
+          else
+            ..._config.entries.map((entry) {
+              if (entry.value is num) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: _ConfigSlider(
+                    label: entry.key.toUpperCase(),
+                    value: (entry.value as num).toDouble(),
+                    min: 0,
+                    max: 100,
+                    onChanged: (val) => setState(() => _config[entry.key] = val),
+                  ),
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: _ConfigInput(
+                    label: entry.key.toUpperCase(),
+                    value: entry.value.toString(),
+                    onChanged: (val) => setState(() => _config[entry.key] = val),
+                  ),
+                );
+              }
+            }).toList(),
+          const Gap(8),
+          Consumer(
+            builder: (context, ref, _) => PrimaryButton(
+              label: 'APPLIQUER MODIFICATIONS',
+              icon: Icons.save_rounded,
+              onPressed: () async {
+                final id = widget.enigma['id']?.toString();
+                if (id == null) return;
+                
+                // Fetch current enigma from provider to get other fields
+                final enigmaState = ref.read(enigmaProvider);
+                final enigmaModel = enigmaState.asData?.value.enigmas.firstWhere((e) => e.id == id);
+                
+                if (enigmaModel != null) {
+                  await ref.read(enigmaProvider.notifier).updateEnigma(
+                    id,
+                    enigmaModel.name,
+                    enigmaModel.type,
+                    enigmaModel.description,
+                    enigmaModel.difficulty,
+                    enigmaModel.isActive,
+                    _config, // New config
+                  );
+                  
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('CONFIGURATION MISE À JOUR !'),
+                        backgroundColor: AppTheme.successGreen,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
           ),
         ],
       ),
     );
   }
 }
+
 
 class _ConfigSlider extends StatelessWidget {
   final String label;

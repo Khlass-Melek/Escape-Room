@@ -7,47 +7,57 @@ import 'package:escape_room_admin/shared/utils/responsive.dart';
 // - [x] Design and Plan Room Focus View <!-- id: 0 -->
 // - [/] Update `CameraGridWidget` to support camera selection <!-- id: 1 -->
 class CameraGridWidget extends StatelessWidget {
+  final List<String> cameras;
+  final String scenarioId;
   final Function(String)? onCameraSelected;
   
-  const CameraGridWidget({super.key, this.onCameraSelected});
+  const CameraGridWidget({
+    super.key, 
+    required this.cameras,
+    required this.scenarioId,
+    this.onCameraSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (cameras.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: AppTheme.secondaryBlack,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.grayBorder, width: 0.5),
+        ),
+        child: const Center(
+          child: Text(
+            'AUCUNE CAMÉRA CONFIGURÉE POUR CE SCÉNARIO',
+            style: TextStyle(color: AppTheme.grayText, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        ),
+      );
+    }
+
     final bool isMobile = Responsive.isMobile(context);
     
-    return GridView.count(
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: isMobile ? 1 : 2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 1.5,
-      children: [
-        _CameraFeed(
-          id: 'CAM_01',
-          label: 'CAM 01 - ENTRÉE', 
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isMobile ? 1 : 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 1.5,
+      ),
+      itemCount: cameras.length,
+      itemBuilder: (context, index) {
+        final ip = cameras[index];
+        return _CameraFeed(
+          id: ip,
+          label: 'IP: $ip', 
           isLive: true,
-          onTap: () => onCameraSelected?.call('CAM_01'),
-        ),
-        _CameraFeed(
-          id: 'CAM_02',
-          label: 'CAM 02 - ZONE ÉNIGME', 
-          isLive: true,
-          onTap: () => onCameraSelected?.call('CAM_02'),
-        ),
-        _CameraFeed(
-          id: 'CAM_03',
-          label: 'CAM 03 - CHAMBRE SECRÈTE', 
-          isLive: true,
-          onTap: () => onCameraSelected?.call('CAM_03'),
-        ),
-        _CameraFeed(
-          id: 'CAM_04',
-          label: 'CAM 04 - PORTE FINALE', 
-          isLive: false,
-          onTap: () => onCameraSelected?.call('CAM_04'),
-        ),
-      ],
+          onTap: () => onCameraSelected?.call(ip),
+        );
+      },
     );
   }
 }

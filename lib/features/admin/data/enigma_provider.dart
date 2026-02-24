@@ -1,6 +1,6 @@
 import 'package:escape_room_admin/features/admin/domain/models/enigma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 
 class EnigmaState {
   final List<Enigma> enigmas;
@@ -18,89 +18,98 @@ class EnigmaState {
   }
 }
 
-class EnigmaNotifier extends Notifier<EnigmaState> {
-  final Uuid _uuid = const Uuid();
+class EnigmaNotifier extends AsyncNotifier<EnigmaState> {
+  final _supabase = supa.Supabase.instance.client;
 
   @override
-  EnigmaState build() {
-    return EnigmaState(
-      enigmas: [
-        const Enigma(
-          id: '1',
-          name: "Porte d'entrée",
-          type: 'Logique',
-          description: 'Le code numérique caché dans le tableau des horaires.',
-          difficulty: 'Facile',
-        ),
-        const Enigma(
-          id: '2',
-          name: 'Panneau Électrique',
-          type: 'Câblage',
-          description: 'Reconnecter les fils selon le code de couleurs pour rétablir le courant.',
-          difficulty: 'Moyen',
-        ),
-        const Enigma(
-          id: '3',
-          name: 'Coffre-fort du Directeur',
-          type: 'Tic Tac Toe',
-          description: "Gagner une partie de morpion contre l'IA pour déverrouiller le coffre.",
-          difficulty: 'Difficile',
-        ),
-      ],
-    );
+  Future<EnigmaState> build() async {
+    return _fetchData();
   }
 
-  void addEnigma(String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) {
-    final newEnigma = Enigma(
-      id: _uuid.v4(),
-      name: name,
-      type: type,
-      description: description,
-      difficulty: difficulty,
-      isActive: isActive,
-      configuration: configuration,
-    );
-
-    state = state.copyWith(
-      enigmas: [...state.enigmas, newEnigma],
-    );
-  }
-
-  void updateEnigma(String id, String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) {
-    final updatedEnigmas = state.enigmas.map((enigma) {
-      if (enigma.id == id) {
-        return enigma.copyWith(
-          name: name,
-          type: type,
-          description: description,
-          difficulty: difficulty,
-          isActive: isActive,
-          configuration: configuration,
-        );
-      }
-      return enigma;
+  Future<EnigmaState> _fetchData() async {
+    // We map 'puzzles' to the Enigma concept
+    final resp = await _supabase.from('puzzles').select().order('name');
+    final enigmas = resp.map((row) {
+      return Enigma(
+        id: row['id'].toString(),
+        name: row['name']?.toString() ?? 'Sans Nom',
+        type: row['type']?.toString() ?? 'Inconnu',
+        description: row['description']?.toString() ?? '',
+        difficulty: row['difficulty']?.toString() ?? 'Moyen',
+        isActive: row['is_active'] ?? true,
+        configuration: Map<String, dynamic>.from(row['config'] ?? {}),
+      );
     }).toList();
 
-    state = state.copyWith(enigmas: updatedEnigmas);
+    return EnigmaState(enigmas: enigmas);
   }
 
-  void toggleEnigmaStatus(String id) {
-    final updatedEnigmas = state.enigmas.map((enigma) {
-      if (enigma.id == id) {
-        return enigma.copyWith(isActive: !enigma.isActive);
-      }
-      return enigma;
-    }).toList();
+  Future<void> addEnigma(String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('puzzles').insert({
+        'name': name,
+        'type': type,
+        'description': description,
+        'difficulty': difficulty,
+        'is_active': isActive,
+        'config': configuration,
+      });
 
-    state = state.copyWith(enigmas: updatedEnigmas);
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
   }
 
-  void deleteEnigma(String id) {
-    final updatedEnigmas = state.enigmas.where((enigma) => enigma.id != id).toList();
-    state = state.copyWith(enigmas: updatedEnigmas);
+  Future<void> updateEnigma(String id, String name, String type, String description, String difficulty, bool isActive, Map<String, dynamic> configuration) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('puzzles').update({
+        'name': name,
+        'type': type,
+        'description': description,
+        'difficulty': difficulty,
+        'is_active': isActive,
+        'config': configuration,
+      }).eq('id', id);
+
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
+  Future<void> toggleEnigmaStatus(String id) async {
+    if (!state.hasValue) return;
+    
+    final currentEnigmas = state.value!.enigmas;
+    final enigmaIndex = currentEnigmas.indexWhere((e) => e.id == id);
+    if (enigmaIndex == -1) return;
+    
+    final newStatus = !currentEnigmas[enigmaIndex].isActive;
+    
+    // Optimistic UI update could be done here, but let's let Supabase decide
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('puzzles').update({'is_active': newStatus}).eq('id', id);
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
+  Future<void> deleteEnigma(String id) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('puzzles').delete().eq('id', id);
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
   }
 }
 
-final enigmaProvider = NotifierProvider<EnigmaNotifier, EnigmaState>(() {
+final enigmaProvider = AsyncNotifierProvider<EnigmaNotifier, EnigmaState>(() {
   return EnigmaNotifier();
 });

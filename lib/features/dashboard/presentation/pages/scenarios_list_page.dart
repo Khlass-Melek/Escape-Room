@@ -3,6 +3,7 @@ import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:escape_room_admin/shared/utils/responsive.dart';
@@ -12,15 +13,7 @@ class ScenariosListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scenarios = [
-      {'id': '1', 'name': 'SAW I', 'active': true, 'players': '2-6', 'time': '60 min', 'image': 'assets/images/saw1.jpg'},
-      {'id': '2', 'name': 'SAW II', 'active': false, 'players': '4-8', 'time': '75 min', 'image': 'assets/images/saw2.jpg'},
-      {'id': '3', 'name': 'PIRATES DES CARAÏBES', 'active': false, 'players': '3-7', 'time': '60 min', 'image': 'assets/images/pirate.png'},
-      {'id': '4', 'name': 'LE CANNIBALE', 'active': false, 'players': '2-5', 'time': '60 min', 'image': 'assets/images/cannibal.png'},
-      {'id': '5', 'name': 'GUANTANAMO', 'active': false, 'players': '4-6', 'time': '90 min', 'image': 'assets/images/Guantanamo.png'},
-      {'id': '6', 'name': 'MAFIA', 'active': false, 'players': '3-6', 'time': '60 min', 'image': 'assets/images/mafia.png'},
-    ];
-
+    final scenariosAsync = ref.watch(scenarioProvider);
     final bool isMobile = Responsive.isMobile(context);
 
     return Scaffold(
@@ -66,24 +59,33 @@ class ScenariosListPage extends ConsumerWidget {
               ),
               SizedBox(height: isMobile ? 24 : 32),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
-                    mainAxisSpacing: isMobile ? 20 : 32,
-                    crossAxisSpacing: isMobile ? 20 : 32,
-                    childAspectRatio: isMobile ? 1.4 : 1.65,
-                  ),
-                  itemCount: scenarios.length,
-                  itemBuilder: (context, index) {
-                    final scenario = scenarios[index];
-                    return _ScenarioCard(
-                      name: scenario['name'] as String,
-                      isActive: scenario['active'] as bool,
-                      players: scenario['players'] as String,
-                      time: scenario['time'] as String,
-                      image: scenario['image'] as String,
-                      onTap: () {
-                        context.go('/dashboard/${scenario['id']}');
+                child: scenariosAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryRed)),
+                  error: (err, stack) => Center(child: Text('Erreur: $err', style: const TextStyle(color: AppTheme.primaryRed))),
+                  data: (scenarios) {
+                    if (scenarios.isEmpty) {
+                      return const Center(child: Text('Aucun scénario trouvé', style: TextStyle(color: AppTheme.grayText)));
+                    }
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
+                        mainAxisSpacing: isMobile ? 20 : 32,
+                        crossAxisSpacing: isMobile ? 20 : 32,
+                        childAspectRatio: isMobile ? 1.4 : 1.65,
+                      ),
+                      itemCount: scenarios.length,
+                      itemBuilder: (context, index) {
+                        final scenario = scenarios[index];
+                        return _ScenarioCard(
+                          name: scenario.name,
+                          isActive: scenario.isActive,
+                          players: scenario.players,
+                          time: '${scenario.estimatedTime} min',
+                          image: scenario.image,
+                          onTap: () {
+                            context.go('/dashboard/${scenario.id}');
+                          },
+                        );
                       },
                     );
                   },

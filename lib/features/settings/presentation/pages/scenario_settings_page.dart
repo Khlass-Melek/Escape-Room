@@ -4,8 +4,13 @@ import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:escape_room_admin/shared/widgets/primary_button.dart';
 import 'package:escape_room_admin/shared/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
+import 'package:escape_room_admin/features/admin/data/enigma_provider.dart';
+import 'package:escape_room_admin/features/dashboard/data/clue_provider.dart';
+import 'package:escape_room_admin/features/dashboard/data/audio_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
@@ -26,51 +31,74 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
   final TextEditingController _cameraController = TextEditingController();
   final TextEditingController _roomController = TextEditingController();
 
-  // Mock list of existing scenarios for management
-  final List<Map<String, dynamic>> _existingScenarios = [
-    {'id': '1', 'name': 'SAW I', 'description': 'Scénario d\'horreur classique', 'image': 'assets/images/saw1.jpg'},
-    {'id': '2', 'name': 'SAW II', 'description': 'La suite infernale', 'image': 'assets/images/saw2.jpg'},
-    {'id': '3', 'name': 'Pirates des Caraïbes', 'description': 'Aventure en haute mer', 'image': 'assets/images/pirate.png'},
-    {'id': '4', 'name': 'Le Cannibale', 'description': 'Survivez au dîner', 'image': 'assets/images/cannibal.png'},
-    {'id': '5', 'name': 'Guantanamo', 'description': 'Évasion de haute sécurité', 'image': 'assets/images/Guantanamo.png'},
-    {'id': '6', 'name': 'Mafia', 'description': 'Règlement de comptes', 'image': 'assets/images/mafia.png'},
-  ];
-
   String? _editingScenarioId;
+  String _selectedImage = 'assets/images/saw1.jpg';
   List<String> _cameras = [];
   List<String> _rooms = [];
-  Map<String, bool> _enigmas = {
-    'Tic-Tac-Toe (IA)': false,
-    'Reconnaissance Vocale': false,
-    'Capteur Sonore (dB)': false,
-    'Câblage': false,
-    'Interrupteurs Binaires': false,
-    'Capteurs de Poids': false,
-    'Plante (Eau)': false,
-  };
+  Map<String, String?> _enigmaCameraMappings = {}; // enigmaId -> cameraIp
+  final _musicFolderController = TextEditingController();
 
-  void _enterFormView([Map<String, dynamic>? scenario]) {
+
+  final List<String> _availableImages = [
+    'assets/images/saw1.jpg',
+    'assets/images/saw2.jpg',
+    'assets/images/pirate.png',
+    'assets/images/cannibal.png',
+    'assets/images/Guantanamo.png',
+    'assets/images/mafia.png',
+  ];
+
+  final TextEditingController _clueController = TextEditingController();
+  final TextEditingController _audioTitleController = TextEditingController();
+  final TextEditingController _audioFileController = TextEditingController();
+
+  void _enterFormView([Map<String, dynamic>? scenario, List<String> mappedEnigmas = const []]) {
     setState(() {
       if (scenario != null) {
         _editingScenarioId = scenario['id'];
         _nameController.text = scenario['name'];
         _descriptionController.text = scenario['description'] ?? '';
-        // In a real app, load specific cameras/rooms/enigmas here
-        _cameras = ['192.168.1.101'];
-        _rooms = ['Chambre Alpha'];
-        _enigmas.updateAll((key, value) => false);
-        _enigmas['Tic-Tac-Toe (IA)'] = true;
+        _selectedImage = scenario['image'] ?? 'assets/images/saw1.jpg';
+        _musicFolderController.text = scenario['music_folder_path'] ?? '';
+        _cameras = List<String>.from(scenario['cameras'] ?? []);
+        _rooms = [];
+        _enigmaCameraMappings = {}; // Will be set by _fetchMappedEnigmasAndEnterForm for edits
+
+
+
+        // Load clues and audio for this scenario
+        ref.read(clueProvider.notifier).loadClues(_editingScenarioId!);
+        ref.read(audioProvider.notifier).loadTracks(_editingScenarioId!);
       } else {
         _editingScenarioId = null;
         _nameController.clear();
         _descriptionController.clear();
+        _selectedImage = 'assets/images/saw1.jpg';
+        _musicFolderController.clear();
         _cameras = [];
         _rooms = [];
-        _enigmas.updateAll((key, value) => false);
+        _enigmaCameraMappings = {};
+
       }
       _currentView = _SettingsView.form;
     });
   }
+
+  Future<void> _fetchMappedEnigmasAndEnterForm(Map<String, dynamic> scenario) async {
+    final client = supa.Supabase.instance.client;
+    final res = await client.from('scenario_puzzles').select('puzzle_id, camera_ip').eq('scenario_id', scenario['id']);
+    
+    final Map<String, String?> mappings = {};
+    for (var row in res) {
+      mappings[row['puzzle_id'].toString()] = row['camera_ip']?.toString();
+    }
+    
+    _enterFormView(scenario);
+    setState(() {
+      _enigmaCameraMappings = mappings;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +124,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
 
   Widget _buildSelectionView() {
     final bool isMobile = Responsive.isMobile(context);
+    final scenariosAsync = ref.watch(scenarioProvider);
     
     return Container(
       decoration: BoxDecoration(
@@ -140,20 +169,33 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
             ),
             SizedBox(height: isMobile ? 32 : 40),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
-                  mainAxisSpacing: isMobile ? 20 : 24,
-                  crossAxisSpacing: isMobile ? 20 : 24,
-                  childAspectRatio: isMobile ? 1.5 : 1.4,
-                ),
-                itemCount: _existingScenarios.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _buildAddButton();
-                  }
-                  final scenario = _existingScenarios[index - 1];
-                  return _buildScenarioItem(scenario);
+              child: scenariosAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryRed)),
+                error: (e, s) => Center(child: Text('Erreur: $e', style: const TextStyle(color: AppTheme.primaryRed))),
+                data: (scenarios) {
+                  return GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
+                      mainAxisSpacing: isMobile ? 20 : 24,
+                      crossAxisSpacing: isMobile ? 20 : 24,
+                      childAspectRatio: isMobile ? 1.5 : 1.4,
+                    ),
+                    itemCount: scenarios.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _buildAddButton();
+                      }
+                      final scenario = scenarios[index - 1];
+                      return _buildScenarioItem({
+                        'id': scenario.id,
+                        'name': scenario.name,
+                        'description': scenario.description,
+                        'image': scenario.image,
+                        'cameras': scenario.cameras,
+                        'music_folder_path': scenario.musicFolderPath,
+                      });
+                    },
+                  );
                 },
               ),
             ),
@@ -213,7 +255,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
       name: scenario['name'],
       description: scenario['description'] ?? '',
       image: scenario['image'] ?? 'assets/images/scenario_placeholder.jpg',
-      onTap: () => _enterFormView(scenario),
+      onTap: () => _fetchMappedEnigmasAndEnterForm(scenario),
     );
   }
 
@@ -244,6 +286,46 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                     controller: _descriptionController,
                     label: 'DESCRIPTION / SYNOPSIS',
                     hint: 'BRÈVE DESCRIPTION POUR L\'ADMINISTRATION...',
+                  ),
+                  const Gap(24),
+                  CustomTextField(
+                    controller: _musicFolderController,
+                    label: 'CHEMIN DU DOSSIER MUSIQUE',
+                    hint: 'EX: C:/Users/Admin/Music/EscapeRoom',
+                  ),
+                  const Gap(24),
+                  const Text('IMAGE DU SCÉNARIO', style: TextStyle(color: AppTheme.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                  const Gap(16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.5,
+                    ),
+                    itemCount: _availableImages.length,
+                    itemBuilder: (context, index) {
+                      final img = _availableImages[index];
+                      final isSelected = _selectedImage == img;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedImage = img),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? AppTheme.primaryRed : Colors.transparent,
+                              width: 3,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(9),
+                            child: Image.asset(img, fit: BoxFit.cover),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -351,20 +433,92 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppTheme.grayBorder, width: 0.5),
                     ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _enigmas.length,
-                      separatorBuilder: (_, __) => Divider(color: AppTheme.grayBorder.withOpacity(0.1), height: 1),
-                      itemBuilder: (context, index) {
-                        final key = _enigmas.keys.elementAt(index);
-                        return SwitchListTile(
-                          title: Text(key.toUpperCase(), style: const TextStyle(color: AppTheme.white, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                          subtitle: Text('MODULE SYSTÈME RÉF: ${index + 101}', style: const TextStyle(color: AppTheme.grayText, fontSize: 9)),
-                          value: _enigmas[key] ?? false,
-                          activeColor: AppTheme.primaryRed,
-                          onChanged: (val) => setState(() => _enigmas[key] = val),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final enigmaAsync = ref.watch(enigmaProvider);
+                        return enigmaAsync.when(
+                          loading: () => const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()),
+                          error: (e, s) => Padding(padding: const EdgeInsets.all(20), child: Text('Erreur: $e', style: const TextStyle(color: AppTheme.primaryRed))),
+                          data: (enigmaState) {
+                            final enigmas = enigmaState.enigmas;
+                            if (enigmas.isEmpty) {
+                              return const Padding(padding: EdgeInsets.all(20), child: Text('Aucune énigme disponible. Veuillez en créer une dans la gestion des énigmes.'));
+                            }
+                            return ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: enigmas.length,
+                              separatorBuilder: (_, __) => Divider(color: AppTheme.grayBorder.withOpacity(0.1), height: 1),
+                              itemBuilder: (context, index) {
+                                final enigma = enigmas[index];
+                                final isSelected = _enigmaCameraMappings.containsKey(enigma.id);
+                                final selectedIp = _enigmaCameraMappings[enigma.id];
+                                
+                                return Column(
+                                  children: [
+                                    SwitchListTile(
+                                      title: Text(enigma.name.toUpperCase(), style: const TextStyle(color: AppTheme.white, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                      subtitle: Text('MODULE : ${enigma.type.toUpperCase()}', style: const TextStyle(color: AppTheme.grayText, fontSize: 9)),
+                                      value: isSelected,
+                                      activeColor: AppTheme.primaryRed,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          if (val) {
+                                            _enigmaCameraMappings[enigma.id] = _cameras.isNotEmpty ? _cameras.first : null;
+                                          } else {
+                                            _enigmaCameraMappings.remove(enigma.id);
+                                          }
+                                        });
+                                      },
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                                    ),
+                                    if (isSelected && _cameras.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+                                        child: Row(
+                                          children: [
+                                            const Text('LIER À LA CAMÉRA :', style: TextStyle(color: AppTheme.grayText, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            const Gap(12),
+                                            Expanded(
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                                decoration: BoxDecoration(
+                                                  color: AppTheme.primaryBlack,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
+                                                ),
+                                                child: DropdownButton<String>(
+                                                  value: _cameras.contains(selectedIp) ? selectedIp : _cameras.first,
+                                                  dropdownColor: AppTheme.secondaryBlack,
+                                                  underline: const SizedBox(),
+                                                  isExpanded: true,
+                                                  style: const TextStyle(color: AppTheme.white, fontSize: 12),
+                                                  items: _cameras.map((ip) => DropdownMenuItem(
+                                                    value: ip,
+                                                    child: Text('CAMÉRA IP: $ip'),
+                                                  )).toList(),
+                                                  onChanged: (newIp) {
+                                                    setState(() => _enigmaCameraMappings[enigma.id] = newIp);
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (isSelected && _cameras.isEmpty)
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 20, right: 20, bottom: 12),
+                                        child: Text(
+                                          'VEUILLEZ AJOUTER UNE CAMÉRA CI-DESSUS POUR LIER CETTE ÉNIGME',
+                                          style: TextStyle(color: AppTheme.warningOrange, fontSize: 9, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         );
                       },
                     ),
@@ -372,12 +526,110 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                 ],
               ),
 
+              const Gap(32),
+
+              if (_editingScenarioId != null) ...[
+                _buildFormSection(
+                  title: 'MESSAGES PRÉDÉFINIS (CLUES)',
+                  subtitle: 'GÉREZ LES INDICES POUR CE SCÉNARIO',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  children: [
+                    Consumer(builder: (context, ref, _) {
+                      final cluesAsync = ref.watch(clueProvider);
+                      return cluesAsync.when(
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, s) => Text('Erreur: $e'),
+                        data: (clues) => Column(
+                          children: [
+                            ...clues.map((clue) => _buildListItem(
+                              label: clue.content,
+                              icon: Icons.message,
+                              onDelete: () => ref.read(clueProvider.notifier).deleteClue(clue.id),
+                            )),
+                            const Gap(16),
+                            Row(
+                              children: [
+                                Expanded(child: CustomTextField(controller: _clueController, label: 'NOUVEAU MESSAGE', hint: 'Tapez ici...')),
+                                const Gap(12),
+                                _CircleAddButton(onPressed: () {
+                                  if (_clueController.text.isNotEmpty) {
+                                    ref.read(clueProvider.notifier).addClue(_clueController.text);
+                                    _clueController.clear();
+                                  }
+                                }),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                const Gap(32),
+                _buildFormSection(
+                  title: 'MUSIQUE D\'AMBIANCE',
+                  subtitle: 'GÉREZ LES PISTES AUDIO',
+                  icon: Icons.music_note_rounded,
+                  children: [
+                    Consumer(builder: (context, ref, _) {
+                      final audioAsync = ref.watch(audioProvider);
+                      return audioAsync.when(
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, s) => Text('Erreur: $e'),
+                        data: (audioState) => Column(
+                          children: [
+                            ...audioState.tracks.map((track) => _buildListItem(
+                              label: '${track.title} (${track.filename})',
+                              icon: Icons.audiotrack,
+                              onDelete: () => ref.read(audioProvider.notifier).deleteTrack(track.id),
+                            )),
+                            const Gap(16),
+                            Row(
+                              children: [
+                                Expanded(child: CustomTextField(controller: _audioTitleController, label: 'TITRE', hint: 'Ambiance horreur')),
+                                const Gap(12),
+                                Expanded(child: CustomTextField(controller: _audioFileController, label: 'FICHIER', hint: 'saw_theme.mp3')),
+                                const Gap(12),
+                                _CircleAddButton(onPressed: () {
+                                  if (_audioTitleController.text.isNotEmpty && _audioFileController.text.isNotEmpty) {
+                                    ref.read(audioProvider.notifier).addTrack(_audioTitleController.text, _audioFileController.text);
+                                    _audioTitleController.clear();
+                                    _audioFileController.clear();
+                                  }
+                                }),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                const Gap(32),
+              ],
+
               const Gap(64),
               PrimaryButton(
                 label: _editingScenarioId == null ? 'ACTIVER LE SCÉNARIO' : 'METTRE À JOUR LE SYSTÈME',
                 icon: Icons.power_settings_new_rounded,
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    final data = {
+                      'name': _nameController.text,
+                      'description': _descriptionController.text,
+                      'image': _selectedImage,
+                      'music_folder_path': _musicFolderController.text,
+                      'cameras': _cameras, // Store the list of IPs as JSONB
+                    };
+
+                    if (_editingScenarioId == null) {
+                      await ref.read(scenarioProvider.notifier).addScenario(data, _enigmaCameraMappings);
+                    } else {
+                      await ref.read(scenarioProvider.notifier).updateScenario(_editingScenarioId!, data, _enigmaCameraMappings);
+                    }
+
+                    if (!context.mounted) return;
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(_editingScenarioId == null 

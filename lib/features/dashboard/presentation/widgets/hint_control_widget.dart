@@ -1,27 +1,31 @@
 
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/shared/widgets/primary_button.dart';
+import 'package:escape_room_admin/features/dashboard/data/clue_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
-class HintControlWidget extends StatefulWidget {
-  const HintControlWidget({super.key});
+class HintControlWidget extends ConsumerStatefulWidget {
+  final String scenarioId;
+  const HintControlWidget({super.key, required this.scenarioId});
 
   @override
-  State<HintControlWidget> createState() => _HintControlWidgetState();
+  ConsumerState<HintControlWidget> createState() => _HintControlWidgetState();
 }
 
-class _HintControlWidgetState extends State<HintControlWidget> {
+class _HintControlWidgetState extends ConsumerState<HintControlWidget> {
   String? currentHint;
   final TextEditingController _customHintController = TextEditingController();
 
-  final List<String> predefinedHints = [
-    "Regardez sous le tapis.",
-    "Le code est lié au nombre de livres.",
-    "Vérifiez le tableau sur le mur.",
-    "Rappelez-vous la séquence de couleurs.",
-    "La clé est dans le tiroir du bas.",
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load clues for this scenario on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(clueProvider.notifier).loadClues(widget.scenarioId);
+    });
+  }
 
   @override
   void dispose() {
@@ -70,22 +74,47 @@ class _HintControlWidgetState extends State<HintControlWidget> {
                   child: TabBarView(
                     children: [
                       // Predefined Hints
-                      ListView.separated(
-                        itemCount: predefinedHints.length,
-                        separatorBuilder: (context, index) => const Divider(color: AppTheme.grayBorder),
-                        itemBuilder: (context, index) {
-                          final hint = predefinedHints[index];
-                          return ListTile(
-                            title: Text(hint, style: const TextStyle(color: AppTheme.white)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.send, color: AppTheme.primaryRed),
-                              onPressed: () {
-                                _sendHint(hint);
-                                Navigator.pop(context);
-                              },
-                            ),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final cluesAsync = ref.watch(clueProvider);
+                          return cluesAsync.when(
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (e, s) => Center(child: Text('Erreur: $e', style: const TextStyle(color: AppTheme.primaryRed))),
+                            data: (clues) {
+                              if (clues.isEmpty) {
+                                return const Center(child: Text('Aucun indice', style: TextStyle(color: AppTheme.grayText)));
+                              }
+                              return ListView.separated(
+                                itemCount: clues.length,
+                                separatorBuilder: (context, index) => const Divider(color: AppTheme.grayBorder),
+                                itemBuilder: (context, index) {
+                                  final hint = clues[index].content;
+                                  return ListTile(
+                                    title: Text(hint, style: const TextStyle(color: AppTheme.white)),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.send, color: AppTheme.primaryRed),
+                                          onPressed: () {
+                                            _sendHint(hint);
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: AppTheme.grayText, size: 18),
+                                          onPressed: () {
+                                            ref.read(clueProvider.notifier).deleteClue(clues[index].id);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           );
-                        },
+                        }
                       ),
                       // Custom Hint
                       Padding(
@@ -105,9 +134,10 @@ class _HintControlWidgetState extends State<HintControlWidget> {
                             ),
                             const Gap(16),
                             PrimaryButton(
-                              label: 'ENVOYER INDICE',
+                              label: 'ENVOYER ET SAUVEGARDER INDICE',
                               onPressed: () {
                                 if (_customHintController.text.isNotEmpty) {
+                                  ref.read(clueProvider.notifier).addClue(_customHintController.text);
                                   _sendHint(_customHintController.text);
                                   Navigator.pop(context);
                                   _customHintController.clear();

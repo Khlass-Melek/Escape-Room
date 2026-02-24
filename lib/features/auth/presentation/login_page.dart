@@ -102,11 +102,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     children: [
                       CustomTextField(
                         controller: _usernameController,
-                        label: 'Nom d\'utilisateur',
-                        hint: 'Entrez votre identifiant',
+                        label: 'Email',
+                        hint: 'Entrez votre email',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer un nom d\'utilisateur';
+                            return 'Veuillez entrer une adresse email';
                           }
                           return null;
                         },

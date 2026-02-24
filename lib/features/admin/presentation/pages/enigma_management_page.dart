@@ -180,8 +180,30 @@ class EnigmaManagementPage extends ConsumerWidget {
   }
 
   Widget _buildEnigmasGrid(BuildContext context, WidgetRef ref, bool isWideScreen) {
-    final enigmaState = ref.watch(enigmaProvider);
-    final enigmas = enigmaState.enigmas;
+    final enigmaStateAsync = ref.watch(enigmaProvider);
+
+    return enigmaStateAsync.when(
+      loading: () => const SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: 100),
+            child: CircularProgressIndicator(color: AppTheme.primaryRed),
+          ),
+        ),
+      ),
+      error: (err, stack) => SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 100),
+            child: Text(
+              'Erreur: $err',
+              style: const TextStyle(color: AppTheme.primaryRed, fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+      data: (enigmaState) {
+        final enigmas = enigmaState.enigmas;
 
     if (enigmas.isEmpty) {
       return SliverToBoxAdapter(
@@ -318,5 +340,6 @@ class EnigmaManagementPage extends ConsumerWidget {
         childCount: enigmas.length,
       ),
     );
+    }); // Closes the `.when()`
   }
 }

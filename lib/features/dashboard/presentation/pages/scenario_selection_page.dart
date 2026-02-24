@@ -4,6 +4,7 @@ import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:escape_room_admin/shared/widgets/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -13,63 +14,7 @@ class ScenarioSelectionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Mock Data for Scenarios with Stats
-    final scenarios = [
-      {
-        'id': '1', 
-        'name': 'SAW I', 
-        'active': true, 
-        'progress': 0.7, 
-        'successRate': 0.45, 
-        'avgTime': '52:10',
-        'difficulty': 4
-      },
-      {
-        'id': '2', 
-        'name': 'SAW II', 
-        'active': false, 
-        'progress': 0.0, 
-        'successRate': 0.38, 
-        'avgTime': '58:45',
-        'difficulty': 5
-      },
-      {
-        'id': '3', 
-        'name': 'Pirates des Caraïbes', 
-        'active': true, 
-        'progress': 0.3, 
-        'successRate': 0.65, 
-        'avgTime': '45:30',
-        'difficulty': 3
-      },
-      {
-        'id': '4', 
-        'name': 'Le Cannibale', 
-        'active': false, 
-        'progress': 0.0, 
-        'successRate': 0.42, 
-        'avgTime': '54:20',
-        'difficulty': 4
-      },
-      {
-        'id': '5', 
-        'name': 'Guantanamo', 
-        'active': false, 
-        'progress': 0.0, 
-        'successRate': 0.50, 
-        'avgTime': '48:15',
-        'difficulty': 3
-      },
-      {
-        'id': '6', 
-        'name': 'Mafia', 
-        'active': false, 
-        'progress': 0.0, 
-        'successRate': 0.55, 
-        'avgTime': '50:00',
-        'difficulty': 3
-      },
-    ];
+    final scenariosAsync = ref.watch(scenarioProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -88,34 +33,46 @@ class ScenarioSelectionPage extends ConsumerWidget {
             ),
             const Gap(24),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 350,
-                  mainAxisSpacing: 24,
-                  crossAxisSpacing: 24,
-                  childAspectRatio: 0.9,
-                ),
-                itemCount: scenarios.length,
-                itemBuilder: (context, index) {
-                  final scenario = scenarios[index];
-                  final isActive = scenario['active'] as bool;
-
-                  return FadeInSlide(
-                    duration: const Duration(milliseconds: 600),
-                    delay: index * 0.1,
-                    child: HoverScaleCard(
-                      onTap: () {
-                        context.go('/dashboard/${scenario['id']}');
-                      },
-                      child: _ScenarioCard(
-                        name: scenario['name'] as String,
-                        isActive: isActive,
-                        progress: scenario['progress'] as double,
-                        successRate: scenario['successRate'] as double,
-                        avgTime: scenario['avgTime'] as String,
-                        difficulty: scenario['difficulty'] as int,
-                      ),
+              child: scenariosAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryRed)),
+                error: (err, stack) => Center(child: Text('Erreur: $err', style: const TextStyle(color: AppTheme.primaryRed))),
+                data: (scenarios) {
+                  if (scenarios.isEmpty) {
+                    return const Center(child: Text('Aucun scénario', style: TextStyle(color: AppTheme.grayText)));
+                  }
+                  return GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 350,
+                      mainAxisSpacing: 24,
+                      crossAxisSpacing: 24,
+                      childAspectRatio: 0.9,
                     ),
+                    itemCount: scenarios.length,
+                    itemBuilder: (context, index) {
+                      final scenario = scenarios[index];
+                      // Hardcoded placeholder stats since these require game_sessions aggregation
+                      final progress = scenario.isActive ? 0.4 : 0.0;
+                      final successRate = 0.65;
+                      final avgTime = '${scenario.estimatedTime}:00';
+
+                      return FadeInSlide(
+                        duration: const Duration(milliseconds: 600),
+                        delay: index * 0.1,
+                        child: HoverScaleCard(
+                          onTap: () {
+                            context.go('/dashboard/${scenario.id}');
+                          },
+                          child: _ScenarioCard(
+                            name: scenario.name,
+                            isActive: scenario.isActive,
+                            progress: progress,
+                            successRate: successRate,
+                            avgTime: avgTime,
+                            difficulty: scenario.difficulty,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

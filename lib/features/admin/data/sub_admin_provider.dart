@@ -1,8 +1,7 @@
 import 'package:escape_room_admin/features/auth/domain/models/user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supa;
 
-// Represents an action done by or affecting a sub-admin.
 class AdminLog {
   final String id;
   final String adminId;
@@ -15,6 +14,15 @@ class AdminLog {
     required this.action,
     required this.timestamp,
   });
+
+  factory AdminLog.fromDb(Map<String, dynamic> row) {
+    return AdminLog(
+      id: row['id'].toString(),
+      adminId: row['user_id']?.toString() ?? '',
+      action: row['event_type'] ?? 'Action Inconnue',
+      timestamp: DateTime.tryParse(row['timestamp'] ?? '') ?? DateTime.now(),
+    );
+  }
 }
 
 class SubAdminState {
@@ -37,95 +45,107 @@ class SubAdminState {
   }
 }
 
-class SubAdminNotifier extends Notifier<SubAdminState> {
-  final Uuid _uuid = const Uuid();
+class SubAdminNotifier extends AsyncNotifier<SubAdminState> {
+  final _supabase = supa.Supabase.instance.client;
 
   @override
-  SubAdminState build() {
-    return SubAdminState(
-      subAdmins: [
-        const User(
-          id: 'initial_gm_1',
-          username: 'Alice (Game Master)',
-          role: 'game_master',
-        ),
-        const User(
-          id: 'initial_sous_1',
-          username: 'Bob (Sous Admin)',
-          role: 'sous_admin',
-        ),
-      ],
-      logs: [
-        AdminLog(
-          id: _uuid.v4(),
-          adminId: 'initial_sous_1',
-          action: 'Compte créé par Super Admin',
-          timestamp: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        AdminLog(
-          id: _uuid.v4(),
-          adminId: 'initial_sous_1',
-          action: 'Privilèges modifiés (Ajout accès Scénarios)',
-          timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-        ),
-      ],
-    );
+  Future<SubAdminState> build() async {
+    return _fetchData();
   }
 
-  void addSubAdmin(String username, String role) {
-    final newUser = User(
-      id: _uuid.v4(),
-      username: username,
-      role: role,
-    );
-    
-    final newLog = AdminLog(
-      id: _uuid.v4(),
-      adminId: newUser.id,
-      action: 'Compte créé.',
-      timestamp: DateTime.now(),
-    );
+  Future<SubAdminState> _fetchData() async {
+    // Fetch users except super_admin
+    final usersResp = await _supabase
+        .from('users')
+        .select()
+        .neq('role', 'super_admin')
+        .order('created_at');
 
-    state = state.copyWith(
-      subAdmins: [...state.subAdmins, newUser],
-      logs: [...state.logs, newLog],
-    );
+    final subAdmins = usersResp.map((row) => User(
+          id: row['id'].toString(),
+          username: row['email']?.toString() ?? 'Sans Email',
+          role: row['role']?.toString() ?? 'viewer',
+        )).toList();
+
+    // Fetch logs representing actions on these admins
+    // We leverage event_logs with a special severity 'ADMIN_LOG' to avoid colliding with game events
+    final logsResp = await _supabase
+        .from('event_logs')
+        .select()
+        .eq('severity', 'ADMIN_LOG')
+        .order('timestamp', ascending: false);
+
+    final logs = logsResp.map((row) => AdminLog.fromDb(row)).toList();
+
+    return SubAdminState(subAdmins: subAdmins, logs: logs);
   }
 
-  void updateSubAdmin(String id, String newUsername, String newRole) {
-    final updatedAdmins = state.subAdmins.map((user) {
-      if (user.id == id) {
-        return user.copyWith(username: newUsername, role: newRole);
-      }
-      return user;
-    }).toList();
+  Future<void> addSubAdmin(String username, String role) async {
+    state = const AsyncValue.loading();
+    try {
+      final String tempPassword = 'password123'; // Default password
+      final newUserResp = await _supabase.from('users').insert({
+        'email': username,
+        'role': role,
+        'password': tempPassword, // Hardcoded for simplified admin flow
+      }).select().single();
 
-    final newLog = AdminLog(
-      id: _uuid.v4(),
-      adminId: id,
-      action: 'Profil ou privilèges mis à jour (Nouveau rôle: \$newRole).',
-      timestamp: DateTime.now(),
-    );
+      final userId = newUserResp['id'];
 
-    state = state.copyWith(
-      subAdmins: updatedAdmins,
-      logs: [...state.logs, newLog],
-    );
+      await _supabase.from('event_logs').insert({
+        'user_id': userId,
+        'event_type': 'Compte créé.',
+        'severity': 'ADMIN_LOG',
+        'payload': {'action': 'CREATE', 'role': role}
+      });
+
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
   }
 
-  void deleteSubAdmin(String id) {
-    final updatedAdmins = state.subAdmins.where((user) => user.id != id).toList();
-    // Keep logs for history, but remove the user
+  Future<void> updateSubAdmin(String id, String newUsername, String newRole) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('users').update({
+        'email': newUsername,
+        'role': newRole,
+      }).eq('id', id);
 
-    state = state.copyWith(subAdmins: updatedAdmins);
+      await _supabase.from('event_logs').insert({
+        'user_id': id,
+        'event_type': 'Profil ou privilèges mis à jour (Nouveau rôle: \$newRole).',
+        'severity': 'ADMIN_LOG',
+        'payload': {'action': 'UPDATE', 'role': newRole}
+      });
+
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
+  Future<void> deleteSubAdmin(String id) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.from('users').delete().eq('id', id);
+      // event_logs have ON DELETE SET NULL for user_id, 
+      // but to keep trace, we could insert a log before deleting if desired.
+      
+      state = AsyncValue.data(await _fetchData());
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
   }
 
   List<AdminLog> getLogsForAdmin(String adminId) {
-    return state.logs.where((log) => log.adminId == adminId).toList()
+    if (!state.hasValue) return [];
+    return state.value!.logs.where((log) => log.adminId == adminId).toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
 }
 
-final subAdminProvider = NotifierProvider<SubAdminNotifier, SubAdminState>(() {
+final subAdminProvider = AsyncNotifierProvider<SubAdminNotifier, SubAdminState>(() {
   return SubAdminNotifier();
 });

@@ -168,8 +168,30 @@ class SubAdminManagementPage extends ConsumerWidget {
   }
 
   Widget _buildSubAdminList(BuildContext context, WidgetRef ref, bool isWideScreen) {
-    final subAdminState = ref.watch(subAdminProvider);
-    final users = subAdminState.subAdmins;
+    final subAdminStateAsync = ref.watch(subAdminProvider);
+
+    return subAdminStateAsync.when(
+      loading: () => const SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: 100),
+            child: CircularProgressIndicator(color: AppTheme.primaryRed),
+          ),
+        ),
+      ),
+      error: (error, stack) => SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 100),
+            child: Text(
+              'Erreur: $error',
+              style: const TextStyle(color: AppTheme.primaryRed, fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+      data: (subAdminState) {
+        final users = subAdminState.subAdmins;
 
     if (users.isEmpty) {
       return SliverToBoxAdapter(
@@ -328,5 +350,6 @@ class SubAdminManagementPage extends ConsumerWidget {
         ),
       );
     }
+    }); // This closes the `when` method block
   }
 }

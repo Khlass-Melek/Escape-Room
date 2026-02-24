@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 
+import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
 class DashboardHomePage extends ConsumerWidget {
@@ -14,15 +15,7 @@ class DashboardHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scenarios = [
-      {'id': '1', 'name': 'SAW I', 'active': true, 'successRate': 0.45, 'avgTime': '52:10', 'difficulty': 4, 'image': 'assets/images/saw1.jpg'},
-      {'id': '2', 'name': 'SAW II', 'active': false, 'successRate': 0.38, 'avgTime': '58:45', 'difficulty': 5, 'image': 'assets/images/saw2.jpg'},
-      {'id': '3', 'name': 'PIRATES DES CARAÏBES', 'active': false, 'successRate': 0.65, 'avgTime': '45:30', 'difficulty': 3, 'image': 'assets/images/pirate.png'},
-      {'id': '4', 'name': 'LE CANNIBALE', 'active': false, 'successRate': 0.42, 'avgTime': '54:20', 'difficulty': 4, 'image': 'assets/images/cannibal.png'},
-      {'id': '5', 'name': 'GUANTANAMO', 'active': false, 'successRate': 0.50, 'avgTime': '48:15', 'difficulty': 3, 'image': 'assets/images/Guantanamo.png'},
-      {'id': '6', 'name': 'MAFIA', 'active': false, 'successRate': 0.55, 'avgTime': '50:00', 'difficulty': 3, 'image': 'assets/images/mafia.png'},
-    ];
-
+    final scenariosAsync = ref.watch(scenarioProvider);
     final bool isMobile = Responsive.isMobile(context);
 
     return Scaffold(
@@ -87,32 +80,41 @@ class DashboardHomePage extends ConsumerWidget {
               ),
               SizedBox(height: isMobile ? 32 : 40),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
-                    mainAxisSpacing: isMobile ? 20 : 24,
-                    crossAxisSpacing: isMobile ? 20 : 24,
-                    childAspectRatio: isMobile ? 1.6 : 1.7,
-                  ),
-                  itemCount: scenarios.length,
-                  itemBuilder: (context, index) {
-                    final scenario = scenarios[index];
-                    return FadeInSlide(
-                      duration: const Duration(milliseconds: 600),
-                      delay: index * 0.08,
-                      child: HoverScaleCard(
-                        onTap: () {
-                          context.go('/dashboard/${scenario['id']}');
-                        },
-                        child: _DashboardCard(
-                          name: scenario['name'] as String,
-                          active: scenario['active'] as bool,
-                          successRate: scenario['successRate'] as double,
-                          avgTime: scenario['avgTime'] as String,
-                          difficulty: scenario['difficulty'] as int,
-                          image: scenario['image'] as String,
-                        ),
+                child: scenariosAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryRed)),
+                  error: (err, stack) => Center(child: Text('Erreur: $err', style: const TextStyle(color: AppTheme.primaryRed))),
+                  data: (scenarios) {
+                    if (scenarios.isEmpty) {
+                      return const Center(child: Text('Aucun scénario trouvé', style: TextStyle(color: AppTheme.grayText)));
+                    }
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3),
+                        mainAxisSpacing: isMobile ? 20 : 24,
+                        crossAxisSpacing: isMobile ? 20 : 24,
+                        childAspectRatio: isMobile ? 1.6 : 1.7,
                       ),
+                      itemCount: scenarios.length,
+                      itemBuilder: (context, index) {
+                        final scenario = scenarios[index];
+                        return FadeInSlide(
+                          duration: const Duration(milliseconds: 600),
+                          delay: index * 0.08,
+                          child: HoverScaleCard(
+                            onTap: () {
+                              context.go('/dashboard/${scenario.id}');
+                            },
+                            child: _DashboardCard(
+                              name: scenario.name,
+                              active: scenario.isActive,
+                              successRate: 0.5, // Placeholder
+                              avgTime: '${scenario.estimatedTime}:00',
+                              difficulty: scenario.difficulty,
+                              image: scenario.image,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

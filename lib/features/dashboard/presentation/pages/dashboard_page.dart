@@ -4,6 +4,7 @@ import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:escape_room_admin/shared/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
 import 'package:gap/gap.dart';
 
 // Placeholder Widgets - will be moved to separate files later
@@ -31,11 +32,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   String? _selectedCameraId;
 
   // In a real app, these would come from a provider based on scenarioId
-  final String scenarioName = "SAW I"; 
+  String get _scenarioName {
+    final asyncScenarios = ref.watch(scenarioProvider);
+    return asyncScenarios.value?.firstWhere((s) => s.id == widget.scenarioId).name ?? "CHARGEMENT...";
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+    final asyncScenarios = ref.watch(scenarioProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.primaryBlack,
@@ -59,7 +64,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   Text(
                     _selectedCameraId != null 
                         ? 'FOCUS : ${_selectedCameraId}'
-                        : scenarioName.toUpperCase(),
+                        : _scenarioName.toUpperCase(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.0,
@@ -107,6 +112,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         ),
         child: _selectedCameraId != null 
             ? RoomFocusView(
+                scenarioId: widget.scenarioId,
                 cameraId: _selectedCameraId!,
                 isMobile: isMobile,
               )
@@ -119,13 +125,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           _StatusBadge(isPlaying: _isPlaying),
                           const Gap(24),
                         ],
-                        CameraGridWidget(
-                          onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                        asyncScenarios.when(
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (e, s) => Center(child: Text('Erreur: $e')),
+                          data: (scenarios) {
+                            final scenario = scenarios.firstWhere((s) => s.id == widget.scenarioId);
+                            return CameraGridWidget(
+                              cameras: scenario.cameras,
+                              scenarioId: widget.scenarioId,
+                              onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                            );
+                          },
                         ),
                         const Gap(24),
-                        const MusicControlWidget(),
+                        MusicControlWidget(scenarioId: widget.scenarioId),
+
                         const Gap(20),
-                        const HintControlWidget(),
+                        HintControlWidget(scenarioId: widget.scenarioId),
                         const Gap(20),
                         const LightingControlWidget(),
                         const Gap(40),
@@ -136,21 +152,32 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       children: [
                         Expanded(
                           flex: 3,
-                          child: CameraGridWidget(
-                            onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                          child: asyncScenarios.when(
+
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (e, s) => Center(child: Text('Erreur: $e')),
+                            data: (scenarios) {
+                              final scenario = scenarios.firstWhere((s) => s.id == widget.scenarioId);
+                              return CameraGridWidget(
+                                cameras: scenario.cameras,
+                                scenarioId: widget.scenarioId,
+                                onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                              );
+                            },
                           ),
                         ),
                         const Gap(24),
+
                         Expanded(
                           flex: 2,
                           child: Column(
-                            children: const [
-                              MusicControlWidget(),
-                              Gap(20),
-                              HintControlWidget(),
-                              Gap(20),
-                              LightingControlWidget(),
-                              Gap(40),
+                            children: [
+                              MusicControlWidget(scenarioId: widget.scenarioId),
+                              const Gap(20),
+                              HintControlWidget(scenarioId: widget.scenarioId),
+                              const Gap(20),
+                              const LightingControlWidget(),
+                              const Gap(40),
                             ],
                           ),
                         ),

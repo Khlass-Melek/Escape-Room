@@ -1,10 +1,10 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:escape_room_admin/features/auth/data/mock_auth_service.dart';
+import 'package:escape_room_admin/features/auth/data/supabase_auth_service.dart';
 import 'package:escape_room_admin/features/auth/domain/models/user.dart';
 
-final authServiceProvider = Provider((ref) => MockAuthService());
+final authServiceProvider = Provider((ref) => SupabaseAuthService());
 
 @immutable
 class AuthState {
