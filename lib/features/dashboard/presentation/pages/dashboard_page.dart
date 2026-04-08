@@ -12,6 +12,7 @@ import 'package:escape_room_admin/features/dashboard/presentation/widgets/music_
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/hint_control_widget.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/lighting_control_widget.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/room_focus_view.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/game_report_form.dart';
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
@@ -37,6 +38,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final asyncScenarios = ref.watch(scenarioProvider);
     final session = ref.watch(gameSessionProvider);
     final sessionNotifier = ref.read(gameSessionProvider.notifier);
+
+    // Listen for session end to show report form
+    ref.listen(gameSessionProvider, (previous, next) {
+      if (next.needsReport && next.lastScenarioId == widget.scenarioId) {
+        _showReportForm(context, next.lastScenarioId!);
+      }
+    });
 
     final bool isRunning = session.isRunning && session.scenarioId == widget.scenarioId;
 
@@ -203,6 +211,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
+  void _showReportForm(BuildContext context, String scenarioId) async {
+    // Clear the flag immediately to prevent re-triggering
+    ref.read(gameSessionProvider.notifier).markReportAsHandled();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => GameReportForm(scenarioId: scenarioId),
+    );
+  }
+
   void _showResetDialog(BuildContext context, GameSessionNotifier notifier) {
     showDialog(
       context: context,
@@ -223,9 +242,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
             child: const Text('RÉINITIALISER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             onPressed: () {
-              notifier.resetSession();
-              ref.invalidate(scenarioProvider);
               Navigator.of(ctx).pop();
+              // Add a tiny delay to allow the dialog animation to start closing
+              Future.delayed(const Duration(milliseconds: 100), () {
+                notifier.resetSession();
+                ref.invalidate(scenarioProvider);
+              });
             },
           ),
         ],

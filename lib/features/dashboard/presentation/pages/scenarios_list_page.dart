@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:gap/gap.dart';
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
 class ScenariosListPage extends ConsumerWidget {

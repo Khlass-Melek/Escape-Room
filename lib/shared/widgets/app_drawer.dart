@@ -2,6 +2,7 @@
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/features/auth/presentation/providers/auth_provider.dart';
 import 'package:escape_room_admin/router.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/game_report_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,6 +55,27 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   
                   const Gap(20),
+                  const _MenuSectionHeader(title: 'RAPPORTS'),
+                  _DrawerItem(
+                    icon: Icons.history_edu_outlined,
+                    selectedIcon: Icons.history_edu,
+                    label: 'Rapports en attente',
+                    isSelected: currentRoute == '/reports/pending',
+                    onTap: () => context.go('/reports/pending'),
+                  ),
+                  _DrawerItem(
+                    icon: Icons.add_chart_outlined,
+                    selectedIcon: Icons.add_chart,
+                    label: 'Nouveau rapport',
+                    isSelected: false,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => const GameReportForm(),
+                      );
+                    },
+                  ),
                   _MenuSectionHeader(title: 'CONFIGURATION'),
                   if (user?.role == 'super_admin') ...[
                     _DrawerItem(

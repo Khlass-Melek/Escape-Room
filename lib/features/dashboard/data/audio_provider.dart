@@ -165,7 +165,7 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
       debugPrint('[scanBucket] Listing folder: "$p" in bucket: $bucketName');
       try {
         final objects = await _supabase.storage.from(bucketName).list(path: p.isEmpty ? null : p);
-        debugPrint('[scanBucket] Found ${objects.length} items in "$p"');
+        debugPrint('[scanBucket] SUCCESS: Found ${objects.length} items in "$p"');
         
         for (final obj in objects) {
           final name = obj.name;
@@ -173,7 +173,9 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
           
           final fullPath = p.isEmpty ? name : '$p/$name';
           
-          // Check if it's an audio file
+          // CRITICAL FIX: In Supabase Storage list(), folders usually have id == null
+          // whereas files have a UUID id. Items without dots are also likely folders.
+          final isFolder = obj.id == null || !name.contains('.');
           final isAudio = audioExtensions.any((ext) => name.toLowerCase().endsWith(ext));
           
           if (isAudio) {
@@ -182,17 +184,18 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
                 .replaceAll(RegExp(r'\.(mp3|wav|ogg|aac|flac|m4a|wma|opus)$', caseSensitive: false), '')
                 .replaceAll('_', ' ').replaceAll('-', ' ');
             result[title] = url;
-            debugPrint('[scanBucket] Added track: $title');
-          } else if (!name.contains('.')) {
-            // It's likely a folder — recurse
+            debugPrint('[scanBucket] + Track found: "$title" at $fullPath');
+          } else if (isFolder) {
+            debugPrint('[scanBucket] > Recursing into folder: $fullPath');
             await listPath(fullPath);
+          } else {
+            debugPrint('[scanBucket] - Skipping non-audio file: $name');
           }
         }
       } catch (e) {
-        debugPrint('[scanBucket] Error listing "$p": $e');
-        // If it's a permission error, we should ideally let the user know
+        debugPrint('[scanBucket] ERROR listing "$p": $e');
         if (e.toString().contains('403') || e.toString().contains('permission')) {
-          throw 'Permission refusée : vérifiez vos politiques (Policies) Supabase.';
+          throw 'Permission Storage refusée (403). Vérifiez que le bucket "$bucketName" est PUBLIC et possède des Policies.';
         }
         rethrow;
       }

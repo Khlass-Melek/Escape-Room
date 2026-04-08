@@ -9,11 +9,15 @@ class GameSessionState {
   final bool isRunning;
   final Duration remaining;
   final String? scenarioId;
+  final String? lastScenarioId;
+  final bool needsReport;
 
   const GameSessionState({
     this.isRunning = false,
     this.remaining = kSessionDuration,
     this.scenarioId,
+    this.lastScenarioId,
+    this.needsReport = false,
   });
 
   bool get isFinished => remaining <= Duration.zero;
@@ -22,11 +26,15 @@ class GameSessionState {
     bool? isRunning,
     Duration? remaining,
     String? scenarioId,
+    String? lastScenarioId,
+    bool? needsReport,
   }) {
     return GameSessionState(
       isRunning: isRunning ?? this.isRunning,
       remaining: remaining ?? this.remaining,
       scenarioId: scenarioId ?? this.scenarioId,
+      lastScenarioId: lastScenarioId ?? this.lastScenarioId,
+      needsReport: needsReport ?? this.needsReport,
     );
   }
 }
@@ -53,23 +61,30 @@ class GameSessionNotifier extends Notifier<GameSessionState> {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       final newRemaining = state.remaining - const Duration(seconds: 1);
       if (newRemaining <= Duration.zero) {
-        resetSession();
+        resetSession(automatic: true);
       } else {
         state = state.copyWith(remaining: newRemaining);
       }
     });
   }
 
-  void resetSession() {
+  void resetSession({bool automatic = false}) {
     _timer?.cancel();
     _timer = null;
 
     final prevScenarioId = state.scenarioId;
-    state = const GameSessionState();
+    state = GameSessionState(
+      lastScenarioId: prevScenarioId,
+      needsReport: true, // Always prompt for report after session stops/ends
+    );
 
     if (prevScenarioId != null) {
       _updateScenarioStatus(prevScenarioId, false);
     }
+  }
+
+  void markReportAsHandled() {
+    state = state.copyWith(needsReport: false);
   }
 
   Future<void> _updateScenarioStatus(String scenarioId, bool isActive) async {
