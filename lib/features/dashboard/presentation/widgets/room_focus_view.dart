@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:escape_room_admin/features/admin/data/enigma_provider.dart';
 import 'package:gap/gap.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supa;
+import 'tic_tac_toe_control_widget.dart';
 
 class RoomFocusView extends StatefulWidget {
   final String scenarioId;
@@ -101,6 +102,14 @@ class _RoomFocusViewState extends State<RoomFocusView> {
             if (_linkedEnigma != null) ...[
               _EnigmaActuators(enigma: _linkedEnigma!),
               const Gap(24),
+              if (_linkedEnigma!['type'] == 'Tic Tac Toe')
+                TicTacToeControlWidget(
+                  enigmaName: _linkedEnigma!['name'] ?? 'Tic Tac Toe',
+                  aiDifficulty: _linkedEnigma!['config']?['ia_difficulty'] ?? 'Moyen',
+///     raspberryPiIp: '192.168.1.42',
+                  raspberryPiIp: widget.cameraId,
+                ),
+              const Gap(24),
               _ConfigurationTerminal(enigma: _linkedEnigma!),
             ] else 
               _NoEnigmaPlaceholder(),
@@ -128,6 +137,13 @@ class _RoomFocusViewState extends State<RoomFocusView> {
                 children: [
                   if (_linkedEnigma != null) ...[
                     _EnigmaActuators(enigma: _linkedEnigma!),
+                    const Gap(24),
+                    if (_linkedEnigma!['type'] == 'Tic Tac Toe')
+                      TicTacToeControlWidget(
+                        enigmaName: _linkedEnigma!['name'] ?? 'Tic Tac Toe',
+                        aiDifficulty: _linkedEnigma!['config']?['ia_difficulty'] ?? 'Moyen',
+                        raspberryPiIp: widget.cameraId,
+                      ),
                     const Gap(24),
                     _ConfigurationTerminal(enigma: _linkedEnigma!),
                   ] else 
