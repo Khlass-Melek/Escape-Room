@@ -49,11 +49,8 @@ class _EnigmaFormDialogState extends State<EnigmaFormDialog> {
         return {'target_phrase': ''};
       case 'Capteur Sonore':
         return {
-          'thresholds': [
-            {'db': 50, 'action': 'Clignoter', 'duration': 5},
-            {'db': 70, 'action': 'Allumer', 'duration': 10},
-            {'db': 90, 'action': 'Éteindre', 'duration': 15},
-          ]
+          't1': 300,
+          't2': 1000,
         };
       case 'Câblage':
         return {
@@ -276,11 +273,12 @@ class _EnigmaFormDialogState extends State<EnigmaFormDialog> {
           ],
         );
       case 'Reconnaissance Vocale':
+        final defaultPhrases = "open the door now, i know the word, get me out fast, security is now disabled, secret code is accepted, end of the game, unlock the main system, access granted for all, the key is free, launch the central program";
         return TextFormField(
-          initialValue: _configuration['target_phrase'] as String? ?? '',
+          initialValue: (_configuration['target_phrase'] == null || (_configuration['target_phrase'] as String).trim().isEmpty) ? defaultPhrases : _configuration['target_phrase'] as String,
           style: const TextStyle(color: AppTheme.white),
           decoration: const InputDecoration(
-            labelText: 'Mot ou phrase cible',
+            labelText: 'Phrase(s) cible(s) (séparées par des virgules)',
             labelStyle: TextStyle(color: AppTheme.grayText),
             enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.grayBorder)),
             focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryRed)),
@@ -288,67 +286,65 @@ class _EnigmaFormDialogState extends State<EnigmaFormDialog> {
           onChanged: (val) => _configuration['target_phrase'] = val,
         );
       case 'Capteur Sonore':
-        final thresholds = _configuration['thresholds'] as List<dynamic>? ?? [];
         return Column(
-          children: List.generate(thresholds.length, (index) {
-            final threshold = thresholds[index] as Map<String, dynamic>;
-            return Padding(
+          children: [
+            Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: threshold['db'].toString(),
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: AppTheme.white),
-                      decoration: InputDecoration(
-                        labelText: 'Seuil ${index + 1} (dB)',
-                        labelStyle: const TextStyle(color: AppTheme.grayText, fontSize: 12),
-                        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.grayBorder)),
-                        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryRed)),
-                      ),
-                      onChanged: (val) => threshold['db'] = int.tryParse(val) ?? 0,
-                    ),
-                  ),
-                  const Gap(8),
-                  Expanded(
-                    flex: 3,
-                    child: _buildDropdown(
-                      value: threshold['action'] as String,
-                      items: ['Allumer', 'Éteindre', 'Clignoter'],
-                      onChanged: (val) => setState(() => threshold['action'] = val),
-                    ),
-                  ),
-                  const Gap(8),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: threshold['duration'].toString(),
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: AppTheme.white),
-                      decoration: const InputDecoration(
-                        labelText: 'Durée (s)',
-                        labelStyle: TextStyle(color: AppTheme.grayText, fontSize: 12),
-                        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.grayBorder)),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryRed)),
-                      ),
-                      onChanged: (val) => threshold['duration'] = int.tryParse(val) ?? 0,
-                    ),
-                  ),
-                ],
+              child: TextFormField(
+                initialValue: _configuration['t1']?.toString() ?? '300',
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppTheme.white),
+                decoration: const InputDecoration(
+                  labelText: 'Seuil 1 - Clignotement (ex: 300)',
+                  labelStyle: TextStyle(color: AppTheme.grayText),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.grayBorder)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryRed)),
+                ),
+                onChanged: (val) => _configuration['t1'] = int.tryParse(val) ?? 300,
               ),
-            );
-          }),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: TextFormField(
+                initialValue: _configuration['t2']?.toString() ?? '1000',
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppTheme.white),
+                decoration: const InputDecoration(
+                  labelText: 'Seuil 2 - Éteint 2min (ex: 1000)',
+                  labelStyle: TextStyle(color: AppTheme.grayText),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.grayBorder)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryRed)),
+                ),
+                onChanged: (val) => _configuration['t2'] = int.tryParse(val) ?? 1000,
+              ),
+            ),
+          ],
         );
       case 'Câblage':
         final connections = _configuration['connections'] as Map<String, dynamic>? ?? {};
+        // S'assurer que les 4 sources existent
+        for (int i = 1; i <= 4; i++) {
+          connections.putIfAbsent('Source $i', () => ['A', 'B', 'C', 'D'][i - 1]);
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Map de connexion correcte', style: TextStyle(color: AppTheme.grayText)),
+            const Text(
+              'Combinaison correcte (4 câbles)',
+              style: TextStyle(color: AppTheme.grayText),
+            ),
+            const Gap(4),
+            const Text(
+              'Sources : GPIO 13, 12, 14, 26  |  Destinations A=GPIO33  B=GPIO32  C=GPIO27  D=GPIO25',
+              style: TextStyle(color: AppTheme.grayText, fontSize: 10),
+            ),
             const Gap(12),
-            ...connections.keys.map((source) {
+            ...['Source 1', 'Source 2', 'Source 3', 'Source 4'].map((source) {
+              String currentValue = connections[source] as String? ?? 'A';
+              if (!['A', 'B', 'C', 'D'].contains(currentValue)) {
+                currentValue = 'A';
+                connections[source] = currentValue;
+              }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -359,7 +355,7 @@ class _EnigmaFormDialogState extends State<EnigmaFormDialog> {
                     Expanded(
                       flex: 2,
                       child: _buildDropdown(
-                        value: connections[source] as String,
+                        value: currentValue,
                         items: ['A', 'B', 'C', 'D'],
                         onChanged: (val) => setState(() => connections[source] = val),
                       ),

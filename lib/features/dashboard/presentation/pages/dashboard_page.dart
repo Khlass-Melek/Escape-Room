@@ -1,10 +1,12 @@
 
+import 'dart:convert';
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/features/dashboard/data/game_session_provider.dart';
 import 'package:escape_room_admin/shared/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:escape_room_admin/features/dashboard/data/scenario_provider.dart';
+import 'package:escape_room_admin/features/admin/data/enigma_provider.dart';
 import 'package:gap/gap.dart';
 
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/camera_grid_widget.dart';
@@ -13,6 +15,17 @@ import 'package:escape_room_admin/features/dashboard/presentation/widgets/hint_c
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/lighting_control_widget.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/room_focus_view.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/game_report_form.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/cables_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/switches_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/plant_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/weight_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/sound_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/voice_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/tictactoe_enigma_widget.dart';
+import 'package:escape_room_admin/features/dashboard/presentation/widgets/camera_viewer_widget.dart';
+import 'package:escape_room_admin/core/services/mqtt_service.dart';
+import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
+import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
@@ -117,6 +130,78 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     isSmall: isMobile,
                     onPressed: () {
                       sessionNotifier.startSession(widget.scenarioId);
+                      
+                      // -- CONFIGURER LES CÂBLES DYNAMIQUEMENT --
+                      final enigmasState = ref.read(enigmaProvider).value;
+                      if (enigmasState != null) {
+                        try {
+                          // === CÂBLAGE ===
+                          final cablesEnigma = enigmasState.enigmas.where((e) => e.type == 'Câblage').firstOrNull;
+                          if (cablesEnigma != null && cablesEnigma.configuration.containsKey('connections')) {
+                            final connections = cablesEnigma.configuration['connections'] as Map<String, dynamic>;
+                            final Map<String, int> sourceMap = {'Source 1': 0, 'Source 2': 1, 'Source 3': 2, 'Source 4': 3};
+                            final Map<String, int> destMap = {'A': 4, 'B': 5, 'C': 6, 'D': 7};
+                            List<List<int>> pairs = [];
+                            for (var entry in connections.entries) {
+                               final src = sourceMap[entry.key];
+                               final dst = destMap[entry.value.toString()];
+                               if (src != null && dst != null) pairs.add([src, dst]);
+                            }
+                            MqttService().publish('escape/room1/enigma/cables/command', jsonEncode({'action': 'config', 'pairs': pairs}));
+                          } else {
+                            MqttService().publish('escape/room1/enigma/cables/command', '{"action":"reset"}');
+                          }
+
+                          // === INTERRUPTEURS BINAIRES ===
+                          final switchesEnigma = enigmasState.enigmas.where((e) => e.type == 'Interrupteurs Binaires').firstOrNull;
+                          if (switchesEnigma != null && switchesEnigma.configuration.containsKey('switches')) {
+                            final switches = (switchesEnigma.configuration['switches'] as List<dynamic>)
+                                .map((e) => (e as int?) ?? 0).toList();
+                            MqttService().publish('escape/room1/enigma/switches/command', jsonEncode({'action': 'config', 'target': switches}));
+                          } else {
+                            MqttService().publish('escape/room1/enigma/switches/command', '{"action":"reset"}');
+                          }
+                          // === PLANTE ===
+                          final plantEnigma = enigmasState.enigmas.where((e) => e.type == 'Plante Eau').firstOrNull;
+                          if (plantEnigma != null && plantEnigma.configuration.containsKey('water_threshold')) {
+                            final threshold = plantEnigma.configuration['water_threshold'] as int? ?? 50;
+                            MqttService().publish('escape/room1/enigma/plant/command', jsonEncode({'action': 'config', 'threshold': threshold}));
+                          } else {
+                            MqttService().publish('escape/room1/enigma/plant/command', '{"action":"reset"}');
+                          }
+                          // === POIDS ===
+                          final weightEnigma = enigmasState.enigmas.where((e) => e.type == 'Capteurs de Poids').firstOrNull;
+                          if (weightEnigma != null && weightEnigma.configuration.containsKey('target_weight_grams')) {
+                            final targetG = weightEnigma.configuration['target_weight_grams'] as int? ?? 1000;
+                            MqttService().publish('escape/room1/enigma/weight/command', jsonEncode({'action': 'config', 'target_g': targetG, 'margin_g': 20}));
+                          } else {
+                            MqttService().publish('escape/room1/enigma/weight/command', '{"action":"reset"}');
+                          }
+                          // === SON ===
+                          final soundEnigma = enigmasState.enigmas.where((e) => e.type == 'Capteur Sonore').firstOrNull;
+                          if (soundEnigma != null && soundEnigma.configuration.containsKey('t1')) {
+                            final t1 = soundEnigma.configuration['t1'] as int? ?? 300;
+                            final t2 = soundEnigma.configuration['t2'] as int? ?? 1000;
+                            MqttService().publish('escape/room1/enigma/calm/command', jsonEncode({'action': 'config', 't1': t1, 't2': t2}));
+                          } else {
+                            MqttService().publish('escape/room1/enigma/calm/command', '{"action":"reset"}');
+                          }
+                          // === VOIX ===
+                          final voiceEnigma = enigmasState.enigmas.where((e) => e.type == 'Reconnaissance Vocale').firstOrNull;
+                          if (voiceEnigma != null && voiceEnigma.configuration.containsKey('target_phrase') && (voiceEnigma.configuration['target_phrase'] as String).trim().isNotEmpty) {
+                            final phrase = voiceEnigma.configuration['target_phrase'] as String;
+                            PublicMqttService().publish('rpi/challenge', phrase.split(',').first.trim());
+                          } else {
+                            PublicMqttService().publish('rpi/challenge', 'open the door now');
+                          }
+                        } catch (e) {
+                          print('MQTT Erreur Config: $e');
+                        }
+                      } else {
+                        MqttService().publish('escape/room1/enigma/cables/command', '{"action":"reset"}');
+                        MqttService().publish('escape/room1/enigma/switches/command', '{"action":"reset"}');
+                      }
+
                       // Refresh scenario list to show updated status
                       ref.invalidate(scenarioProvider);
                     },
@@ -169,6 +254,22 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           HintControlWidget(scenarioId: widget.scenarioId),
                           const Gap(20),
                           const LightingControlWidget(),
+                          const Gap(20),
+                          const CablesEnigmaWidget(),
+                          const Gap(20),
+                          const SwitchesEnigmaWidget(),
+                          const Gap(20),
+                          const PlantEnigmaWidget(),
+                          const Gap(20),
+                          const WeightEnigmaWidget(),
+                          const Gap(20),
+                          const SoundEnigmaWidget(),
+                          const Gap(20),
+                          const VoiceEnigmaWidget(),
+                          const Gap(20),
+                          const TicTacToeEnigmaWidget(),
+                          const Gap(20),
+                          const CameraViewerWidget(),
                           const Gap(40),
                         ],
                       )
@@ -200,6 +301,20 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                                 HintControlWidget(scenarioId: widget.scenarioId),
                                 const Gap(20),
                                 const LightingControlWidget(),
+                                const Gap(20),
+                                const CablesEnigmaWidget(),
+                                const Gap(20),
+                                const SwitchesEnigmaWidget(),
+                                const Gap(20),
+                                const PlantEnigmaWidget(),
+                                const Gap(20),
+                                const WeightEnigmaWidget(),
+                                const Gap(20),
+                                const SoundEnigmaWidget(),
+                                const Gap(20),
+                                const VoiceEnigmaWidget(),
+                                const Gap(20),
+                                const TicTacToeEnigmaWidget(),
                                 const Gap(40),
                               ],
                             ),
@@ -243,6 +358,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             child: const Text('RÉINITIALISER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             onPressed: () {
               Navigator.of(ctx).pop();
+              // Envoyer l'ordre de réinitialiser toutes les énigmes
+              try {
+                MqttService().publish('escape/room1/enigma/cables/command', '{"action":"reset"}');
+                PublicMqttService().publish('rpi/challenge', '');
+                PublicMqttService().publish('escape/room1/enigma/tictactoe/command', '{"action":"reset"}');
+              } catch (e) {
+                print("MQTT Erreur: $e");
+              }
               // Add a tiny delay to allow the dialog animation to start closing
               Future.delayed(const Duration(milliseconds: 100), () {
                 notifier.resetSession();
@@ -408,3 +531,4 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
+
