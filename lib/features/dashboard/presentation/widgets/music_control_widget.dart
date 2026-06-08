@@ -9,7 +9,12 @@ import 'package:audioplayers/audioplayers.dart';
 
 class MusicControlWidget extends ConsumerStatefulWidget {
   final String scenarioId;
-  const MusicControlWidget({super.key, required this.scenarioId});
+  final bool isCompact;
+  const MusicControlWidget({
+    super.key, 
+    required this.scenarioId,
+    this.isCompact = false,
+  });
 
   @override
   ConsumerState<MusicControlWidget> createState() => _MusicControlWidgetState();
@@ -95,7 +100,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
     });
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(widget.isCompact ? 16 : 24),
       decoration: BoxDecoration(
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(24),
@@ -149,7 +154,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                   ),
                 ],
               ),
-              const Gap(24),
+              Gap(widget.isCompact ? 16 : 24),
 
               if (_showPlaylist) ...[
                 // Playlist View
@@ -157,7 +162,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                   height: 250,
                   child: ListView.separated(
                     itemCount: state.tracks.length,
-                    separatorBuilder: (_, __) => const Gap(8),
+                    separatorBuilder: (_, __) => Gap(widget.isCompact ? 4 : 8),
                     itemBuilder: (context, index) {
                       final track = state.tracks[index];
                       final isCurrent = state.currentTrackIndex == index;
@@ -192,8 +197,8 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                 Row(
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: widget.isCompact ? 48 : 64,
+                      height: widget.isCompact ? 48 : 64,
                       decoration: BoxDecoration(
                         color: AppTheme.primaryBlack,
                         borderRadius: BorderRadius.circular(16),
@@ -204,19 +209,19 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                           opacity: 0.5,
                         ) : null,
                       ),
-                      child: const Icon(Icons.album_rounded, color: AppTheme.grayText, size: 32),
+                      child: Icon(Icons.album_rounded, color: AppTheme.grayText, size: widget.isCompact ? 24 : 32),
                     ),
-                    const Gap(20),
+                    Gap(widget.isCompact ? 12 : 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             currentTrack?.title.toUpperCase() ?? 'AUCUNE PISTE',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.white,
                               fontWeight: FontWeight.w900,
-                              fontSize: 16,
+                              fontSize: widget.isCompact ? 13 : 16,
                               letterSpacing: 0.5,
                             ),
                             maxLines: 1,
@@ -224,14 +229,14 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                           ),
                           Text(
                             scenario?.name.toUpperCase() ?? 'OST',
-                            style: const TextStyle(color: AppTheme.grayText, fontSize: 11, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppTheme.grayText, fontSize: widget.isCompact ? 9 : 11, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const Gap(32),
+                Gap(widget.isCompact ? 16 : 32),
                 
                 // Progress
                 Column(
@@ -265,22 +270,22 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                     ),
                   ],
                 ),
-                const Gap(24),
+                Gap(widget.isCompact ? 12 : 24),
 
                 // Controls
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.skip_previous_rounded, color: AppTheme.white, size: 28),
+                      icon: Icon(Icons.skip_previous_rounded, color: AppTheme.white, size: widget.isCompact ? 24 : 28),
                       onPressed: () => ref.read(audioProvider.notifier).prevTrack(),
                     ),
-                    const Gap(24),
+                    Gap(widget.isCompact ? 16 : 24),
                     GestureDetector(
                       onTap: () => ref.read(audioProvider.notifier).togglePlay(),
                       child: Container(
-                        width: 64,
-                        height: 64,
+                        width: widget.isCompact ? 48 : 64,
+                        height: widget.isCompact ? 48 : 64,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppTheme.primaryRed,
@@ -295,20 +300,20 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                         child: Icon(
                           state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                           color: AppTheme.white,
-                          size: 36,
+                          size: widget.isCompact ? 28 : 36,
                         ),
                       ),
                     ),
-                    const Gap(24),
+                    Gap(widget.isCompact ? 16 : 24),
                     IconButton(
-                      icon: const Icon(Icons.skip_next_rounded, color: AppTheme.white, size: 28),
+                      icon: Icon(Icons.skip_next_rounded, color: AppTheme.white, size: widget.isCompact ? 24 : 28),
                       onPressed: () => ref.read(audioProvider.notifier).nextTrack(),
                     ),
                   ],
                 ),
               ],
 
-              const Gap(32),
+              Gap(widget.isCompact ? 16 : 32),
               // Volume
               Row(
                 children: [

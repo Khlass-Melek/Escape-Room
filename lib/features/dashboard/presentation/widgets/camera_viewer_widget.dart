@@ -1,18 +1,9 @@
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:ui_web' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
-
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:gap/gap.dart';
-
-// ────────────────────────────────────────────────────────────
-// ⚠️ NOTE : Ce widget utilise dart:html qui est disponible
-//    uniquement sur Flutter Web. L'app est lancée en web
-//    donc c'est parfaitement compatible.
-// ────────────────────────────────────────────────────────────
+import 'dart:ui_web' as ui;
+import 'dart:html' as html;
 
 class CameraViewerWidget extends StatefulWidget {
   const CameraViewerWidget({super.key});
@@ -32,22 +23,16 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
   void initState() {
     super.initState();
     if (kIsWeb) {
-      _registerView();
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
+        final img = html.ImageElement()
+          ..src = _streamUrl
+          ..style.width = '100%'
+          ..style.height = '100%'
+          ..style.objectFit = 'cover';
+        return img;
+      });
     }
-  }
-
-  void _registerView() {
-    // Crée un élément <img> HTML natif qui lit le flux MJPEG
-    final imgElement = html.ImageElement()
-      ..src = _streamUrl
-      ..style.width = '100%'
-      ..style.height = '100%'
-      ..style.objectFit = 'cover'
-      ..style.borderRadius = '8px'
-      ..style.background = '#000';
-
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => imgElement);
   }
 
   @override
@@ -131,17 +116,7 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
           if (_isVisible) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                height: 220,
-                child: kIsWeb
-                    ? HtmlElementView(viewType: _viewId)
-                    : const Center(
-                        child: Text(
-                          'Disponible uniquement sur Web',
-                          style: TextStyle(color: AppTheme.grayText),
-                        ),
-                      ),
-              ),
+              child: HtmlElementView(viewType: _viewId),
             ),
             const Gap(12),
             // URL du flux

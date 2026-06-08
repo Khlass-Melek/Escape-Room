@@ -232,10 +232,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 child: isMobile
                     ? Column(
                         children: [
-                          if (isMobile) ...[
-                            _StatusBadge(isRunning: isRunning),
-                            const Gap(24),
-                          ],
+                          _StatusBadge(isRunning: isRunning),
+                          const Gap(16),
+                          // Camera first on mobile
                           asyncScenarios.when(
                             loading: () => const Center(child: CircularProgressIndicator()),
                             error: (e, s) => Center(child: Text('Erreur: $e')),
@@ -245,76 +244,136 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                                 cameras: scenario.cameras,
                                 scenarioId: widget.scenarioId,
                                 onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                                singleColumn: true,
                               );
                             },
                           ),
+                          const Gap(16),
+                          // Tabbed controls (music/indices/lumières)
+                          _DashboardControlPanel(scenarioId: widget.scenarioId),
                           const Gap(24),
-                          MusicControlWidget(scenarioId: widget.scenarioId),
-                          const Gap(20),
-                          HintControlWidget(scenarioId: widget.scenarioId),
-                          const Gap(20),
-                          const LightingControlWidget(),
-                          const Gap(20),
+                          // Divider label
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, bottom: 16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 3,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryRed,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const Gap(10),
+                                const Text(
+                                  'ÉNIGMES',
+                                  style: TextStyle(
+                                    color: AppTheme.white,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2.5,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Enigmas below
                           const CablesEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const SwitchesEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const PlantEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const WeightEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const SoundEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const VoiceEnigmaWidget(),
-                          const Gap(20),
+                          const Gap(16),
                           const TicTacToeEnigmaWidget(),
-                          const Gap(20),
-                          const CameraViewerWidget(),
                           const Gap(40),
                         ],
                       )
                     : Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ── LEFT: Enigmas ─────────────────────────────────
                           Expanded(
-                            flex: 3,
-                            child: asyncScenarios.when(
-                              loading: () => const Center(child: CircularProgressIndicator()),
-                              error: (e, s) => Center(child: Text('Erreur: $e')),
-                              data: (scenarios) {
-                                final scenario = scenarios.firstWhere((s) => s.id == widget.scenarioId);
-                                return CameraGridWidget(
-                                  cameras: scenario.cameras,
-                                  scenarioId: widget.scenarioId,
-                                  onCameraSelected: (id) => setState(() => _selectedCameraId = id),
-                                );
-                              },
+                            flex: 5,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4, bottom: 16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 3,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryRed,
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      const Gap(10),
+                                      const Text(
+                                        'ÉNIGMES',
+                                        style: TextStyle(
+                                          color: AppTheme.white,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 2.5,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                GridView.count(
+                                  crossAxisCount: 2,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 1.7,
+                                  children: const [
+                                    CablesEnigmaWidget(),
+                                    SwitchesEnigmaWidget(),
+                                    PlantEnigmaWidget(),
+                                    WeightEnigmaWidget(),
+                                    SoundEnigmaWidget(),
+                                    VoiceEnigmaWidget(),
+                                    TicTacToeEnigmaWidget(),
+                                  ],
+                                ),
+                                const Gap(40),
+                              ],
                             ),
                           ),
-                          const Gap(24),
+                          const Gap(20),
+                          // ── RIGHT: Camera + Tabbed Controls ───────────────
                           Expanded(
                             flex: 2,
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                MusicControlWidget(scenarioId: widget.scenarioId),
-                                const Gap(20),
-                                HintControlWidget(scenarioId: widget.scenarioId),
-                                const Gap(20),
-                                const LightingControlWidget(),
-                                const Gap(20),
-                                const CablesEnigmaWidget(),
-                                const Gap(20),
-                                const SwitchesEnigmaWidget(),
-                                const Gap(20),
-                                const PlantEnigmaWidget(),
-                                const Gap(20),
-                                const WeightEnigmaWidget(),
-                                const Gap(20),
-                                const SoundEnigmaWidget(),
-                                const Gap(20),
-                                const VoiceEnigmaWidget(),
-                                const Gap(20),
-                                const TicTacToeEnigmaWidget(),
+                                // Camera
+                                asyncScenarios.when(
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (e, s) => Center(child: Text('Erreur: $e')),
+                                  data: (scenarios) {
+                                    final scenario = scenarios.firstWhere((s) => s.id == widget.scenarioId);
+                                    return CameraGridWidget(
+                                      cameras: scenario.cameras,
+                                      scenarioId: widget.scenarioId,
+                                      onCameraSelected: (id) => setState(() => _selectedCameraId = id),
+                                      singleColumn: true,
+                                    );
+                                  },
+                                ),
+                                const Gap(16),
+                                // Tabbed control panel
+                                _DashboardControlPanel(scenarioId: widget.scenarioId),
                                 const Gap(40),
                               ],
                             ),
@@ -377,6 +436,120 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ),
     );
   }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Tabbed control panel: Music · Indices · Éclairage
+// ──────────────────────────────────────────────────────────────────────────────
+class _DashboardControlPanel extends ConsumerStatefulWidget {
+  final String scenarioId;
+  const _DashboardControlPanel({required this.scenarioId});
+
+  @override
+  ConsumerState<_DashboardControlPanel> createState() => _DashboardControlPanelState();
+}
+
+class _DashboardControlPanelState extends ConsumerState<_DashboardControlPanel>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  static const _tabs = [
+    _TabItem(icon: Icons.music_note_rounded, label: 'MUSIQUE'),
+    _TabItem(icon: Icons.lightbulb_rounded, label: 'INDICES'),
+    _TabItem(icon: Icons.lightbulb_outline_rounded, label: 'LUMIÈRES'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryBlack,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.grayBorder, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Tab bar header
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.primaryBlack.withOpacity(0.5),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: AppTheme.primaryRed,
+              indicatorWeight: 2,
+              labelColor: AppTheme.primaryRed,
+              unselectedLabelColor: AppTheme.grayText,
+              labelStyle: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+              dividerColor: Colors.transparent,
+              tabs: _tabs
+                  .map((t) => Tab(
+                        icon: Icon(t.icon, size: 16),
+                        text: t.label,
+                        iconMargin: const EdgeInsets.only(bottom: 2),
+                      ))
+                  .toList(),
+            ),
+          ),
+          // Tab content — fixed height so TabBarView can render
+          SizedBox(
+            height: 360,
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: MusicControlWidget(
+                    scenarioId: widget.scenarioId,
+                    isCompact: true,
+                  ),
+                ),
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: HintControlWidget(scenarioId: widget.scenarioId),
+                ),
+                const SingleChildScrollView(
+                  padding: EdgeInsets.all(16),
+                  child: LightingControlWidget(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabItem {
+  final IconData icon;
+  final String label;
+  const _TabItem({required this.icon, required this.label});
 }
 
 class _StatusBadge extends StatelessWidget {
@@ -531,4 +704,3 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
-

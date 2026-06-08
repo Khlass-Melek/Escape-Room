@@ -243,7 +243,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
               ),
             ),
           ),
-          const Gap(16),
+          const Spacer(),
 
           // Actions
           Row(

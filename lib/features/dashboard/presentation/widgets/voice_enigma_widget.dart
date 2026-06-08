@@ -281,7 +281,7 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
               ),
             ),
           ),
-          const Gap(16),
+          const Spacer(),
 
           // Actions
           Row(

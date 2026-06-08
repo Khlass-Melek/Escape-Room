@@ -10,12 +10,14 @@ class CameraGridWidget extends StatelessWidget {
   final List<String> cameras;
   final String scenarioId;
   final Function(String)? onCameraSelected;
+  final bool singleColumn;
   
   const CameraGridWidget({
     super.key, 
     required this.cameras,
     required this.scenarioId,
     this.onCameraSelected,
+    this.singleColumn = false,
   });
 
   @override
@@ -43,10 +45,10 @@ class CameraGridWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isMobile ? 1 : 2,
+        crossAxisCount: (isMobile || singleColumn) ? 1 : 2,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 1.5,
+        childAspectRatio: singleColumn ? 1.8 : 1.5,
       ),
       itemCount: cameras.length,
       itemBuilder: (context, index) {

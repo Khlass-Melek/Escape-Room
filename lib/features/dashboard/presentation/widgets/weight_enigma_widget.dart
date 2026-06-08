@@ -257,7 +257,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
               ),
             ),
           ),
-          const Gap(16),
+          const Spacer(),
 
           // Actions
           Row(

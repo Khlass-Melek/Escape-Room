@@ -177,7 +177,7 @@ class _CablesEnigmaWidgetState extends State<CablesEnigmaWidget> {
             ),
           ),
           
-          const Gap(24),
+          const Spacer(),
 
           // Actions
           Row(

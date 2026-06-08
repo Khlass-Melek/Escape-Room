@@ -186,7 +186,7 @@ class _SoundEnigmaWidgetState extends State<SoundEnigmaWidget> {
               ),
             ),
           ),
-          const Gap(16),
+          const Spacer(),
 
           // Actions
           Row(

@@ -99,7 +99,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(16),
@@ -159,7 +159,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
               ),
             ],
           ),
-          const Gap(16),
+          const Gap(10),
 
           // Status
           Container(
@@ -180,7 +180,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
               ),
             ),
           ),
-          const Gap(16),
+          const Gap(10),
 
           // Grille 3x3
           GridView.builder(
@@ -188,9 +188,9 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 1.5,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
+              childAspectRatio: 3,
             ),
             itemCount: 9,
             itemBuilder: (context, index) {
@@ -215,14 +215,14 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                   style: TextStyle(
                     color: isOn ? AppTheme.white : AppTheme.grayText,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 14,
                     fontFamily: 'monospace',
                   ),
                 ),
               );
             },
           ),
-          const Gap(16),
+          const Spacer(),
 
           // Actions
           Row(
@@ -234,7 +234,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                     foregroundColor: AppTheme.grayText,
                     side: BorderSide(
                         color: AppTheme.grayText.withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
@@ -258,7 +258,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                     foregroundColor: AppTheme.successGreen,
                     side: BorderSide(
                         color: AppTheme.successGreen.withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
