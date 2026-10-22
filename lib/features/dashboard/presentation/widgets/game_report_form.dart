@@ -254,7 +254,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                             status: 'pending',
                           );
                           await ref.read(gameReportProvider.notifier).submitReport(report);
-                          if (mounted) Navigator.of(context).pop();
+                          if (context.mounted) Navigator.of(context).pop();
                         },
                         child: const Text('PLUS TARD', style: TextStyle(color: AppTheme.grayText)),
                       ),
