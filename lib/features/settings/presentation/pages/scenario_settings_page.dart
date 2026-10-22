@@ -646,7 +646,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                       await ref.read(scenarioProvider.notifier).updateScenario(_editingScenarioId!, data, _enigmaCameraMappings);
                     }
 
-                    if (!context.mounted) return;
+                    if (!mounted) return;
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
