@@ -8,7 +8,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:escape_room_admin/main.dart';
 import 'package:escape_room_admin/app.dart';
 
 void main() {

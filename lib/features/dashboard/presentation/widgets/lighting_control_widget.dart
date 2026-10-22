@@ -32,7 +32,7 @@ class _LightingControlWidgetState extends State<LightingControlWidget> {
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -46,7 +46,7 @@ class _LightingControlWidgetState extends State<LightingControlWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.white.withOpacity(0.1),
+                  color: AppTheme.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.lightbulb_outline_rounded, color: AppTheme.white, size: 20),
@@ -147,7 +147,7 @@ class _LightingControlWidgetState extends State<LightingControlWidget> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.white.withOpacity(0.02),
+                  color: AppTheme.white.withValues(alpha: 0.02),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: SwitchListTile(
@@ -156,10 +156,10 @@ class _LightingControlWidgetState extends State<LightingControlWidget> {
                     style: const TextStyle(color: AppTheme.white, fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                   value: room['isOn'],
-                  activeColor: AppTheme.primaryRed,
-                  activeTrackColor: AppTheme.primaryRed.withOpacity(0.2),
+                  activeThumbColor: AppTheme.primaryRed,
+                  activeTrackColor: AppTheme.primaryRed.withValues(alpha: 0.2),
                   inactiveThumbColor: AppTheme.grayText,
-                  inactiveTrackColor: AppTheme.grayBorder.withOpacity(0.2),
+                  inactiveTrackColor: AppTheme.grayBorder.withValues(alpha: 0.2),
                   onChanged: (val) => setState(() => room['isOn'] = val),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
@@ -199,7 +199,7 @@ class _LightActionButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
-        side: BorderSide(color: color.withOpacity(0.5)),
+        side: BorderSide(color: color.withValues(alpha: 0.5)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),

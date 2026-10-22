@@ -31,12 +31,10 @@ class AppTheme {
         primary: primaryRed,
         secondary: secondaryRed,
         surface: secondaryBlack,
-        background: primaryBlack,
         error: primaryRed,
         onPrimary: white,
         onSecondary: white,
         onSurface: white,
-        onBackground: white,
         onError: white,
       ),
       
@@ -113,7 +111,7 @@ class AppTheme {
           backgroundColor: primaryRed,
           foregroundColor: white,
           elevation: 4,
-          shadowColor: primaryRed.withOpacity(0.4),
+          shadowColor: primaryRed.withValues(alpha: 0.4),
           textStyle: GoogleFonts.roboto(
             fontWeight: FontWeight.bold,
             fontSize: 16,

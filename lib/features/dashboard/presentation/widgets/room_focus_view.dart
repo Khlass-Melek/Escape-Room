@@ -45,9 +45,9 @@ class _RoomFocusViewState extends State<RoomFocusView> {
           .eq('scenario_id', widget.scenarioId)
           .eq('camera_ip', widget.cameraId);
       
-      debugPrint('[RoomFocusView] camera_ip query returned ${res?.length ?? 0} rows: $res');
+      debugPrint('[RoomFocusView] camera_ip query returned ${res.length ?? 0} rows: $res');
       
-      if (res != null && res.isNotEmpty) {
+      if (res.isNotEmpty) {
         final firstMatch = res.first;
         if (firstMatch['puzzles'] != null) {
           setState(() {
@@ -66,9 +66,9 @@ class _RoomFocusViewState extends State<RoomFocusView> {
           .select('*, puzzles(*)')
           .eq('scenario_id', widget.scenarioId);
       
-      debugPrint('[RoomFocusView] fallback query returned ${fallbackRes?.length ?? 0} rows: $fallbackRes');
+      debugPrint('[RoomFocusView] fallback query returned ${fallbackRes.length ?? 0} rows: $fallbackRes');
 
-      if (fallbackRes != null && fallbackRes.isNotEmpty) {
+      if (fallbackRes.isNotEmpty) {
         final firstMatch = fallbackRes.first;
         if (firstMatch['puzzles'] != null) {
           setState(() {
@@ -166,11 +166,11 @@ class _NoEnigmaPlaceholder extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.grayBorder.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.grayBorder.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
-          Icon(Icons.extension_off_rounded, color: AppTheme.grayText.withOpacity(0.5), size: 48),
+          Icon(Icons.extension_off_rounded, color: AppTheme.grayText.withValues(alpha: 0.5), size: 48),
           const Gap(16),
           const Text(
             "IL N'Y A PAS D'ÉNIGME DANS CETTE CHAMBRE",
@@ -196,10 +196,10 @@ class _LargeCameraFeed extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppTheme.primaryRed.withOpacity(0.5), width: 2),
+          border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.5), width: 2),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryRed.withOpacity(0.1),
+              color: AppTheme.primaryRed.withValues(alpha: 0.1),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -223,16 +223,16 @@ class _LargeCameraFeed extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.4),
+                      Colors.black.withValues(alpha: 0.4),
                       Colors.transparent,
-                      Colors.black.withOpacity(0.6),
+                      Colors.black.withValues(alpha: 0.6),
                     ],
                   ),
                 ),
               ),
 
               // Tech indicators
-              Positioned(
+              const Positioned(
                 top: 20,
                 left: 20,
                 child: _TechTag(label: 'STREAM: ACTIVE', color: AppTheme.successGreen),
@@ -240,11 +240,11 @@ class _LargeCameraFeed extends StatelessWidget {
               Positioned(
                 top: 20,
                 right: 20,
-                child: _TechTag(label: 'RES: 1080P', color: AppTheme.white.withOpacity(0.5)),
+                child: _TechTag(label: 'RES: 1080P', color: AppTheme.white.withValues(alpha: 0.5)),
               ),
 
               // Center Crosshair
-              Center(
+              const Center(
                 child: Opacity(
                   opacity: 0.2,
                   child: Icon(Icons.add_rounded, color: AppTheme.white, size: 40),
@@ -270,7 +270,7 @@ class _LargeCameraFeed extends StatelessWidget {
                     Text(
                       'LOCATION: SECTEUR_ALPHA_01',
                       style: TextStyle(
-                        color: AppTheme.white.withOpacity(0.7),
+                        color: AppTheme.white.withValues(alpha: 0.7),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -296,9 +296,9 @@ class _TechTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.5), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
       ),
       child: Text(
         label,
@@ -392,9 +392,9 @@ class _ActuatorButton extends StatelessWidget {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 20),
-          side: BorderSide(color: color.withOpacity(0.3)),
+          side: BorderSide(color: color.withValues(alpha: 0.3)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: color.withOpacity(0.05),
+          backgroundColor: color.withValues(alpha: 0.05),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -444,16 +444,16 @@ class _ConfigurationTerminalState extends State<_ConfigurationTerminal> {
       decoration: BoxDecoration(
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.settings_input_component_rounded, color: AppTheme.primaryRed, size: 20),
-              const Gap(12),
-              const Text(
+              Icon(Icons.settings_input_component_rounded, color: AppTheme.primaryRed, size: 20),
+              Gap(12),
+              Text(
                 'CONFIGURATION VARIABLES',
                 style: TextStyle(
                   color: AppTheme.white,
@@ -497,7 +497,7 @@ class _ConfigurationTerminalState extends State<_ConfigurationTerminal> {
                   ),
                 );
               }
-            }).toList(),
+            }),
           const Gap(8),
           Consumer(
             builder: (context, ref, _) => PrimaryButton(
@@ -615,7 +615,7 @@ class _ConfigInput extends StatelessWidget {
           style: const TextStyle(color: AppTheme.white, fontSize: 14, fontFamily: 'monospace'),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.black.withOpacity(0.3),
+            fillColor: Colors.black.withValues(alpha: 0.3),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppTheme.grayBorder, width: 0.5),

@@ -1,7 +1,6 @@
 
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:escape_room_admin/features/auth/presentation/providers/auth_provider.dart';
-import 'package:escape_room_admin/router.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/game_report_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +20,7 @@ class AppDrawer extends ConsumerWidget {
       backgroundColor: Colors.transparent, // Allow for custom background styling
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.primaryBlack.withOpacity(0.95),
+          color: AppTheme.primaryBlack.withValues(alpha: 0.95),
           border: const Border(
             right: BorderSide(color: AppTheme.grayBorder, width: 0.5),
           ),
@@ -38,7 +37,7 @@ class AppDrawer extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
-                   _MenuSectionHeader(title: 'NAVIGATION'),
+                   const _MenuSectionHeader(title: 'NAVIGATION'),
                   _DrawerItem(
                     icon: Icons.dashboard_outlined,
                     selectedIcon: Icons.dashboard,
@@ -76,7 +75,7 @@ class AppDrawer extends ConsumerWidget {
                       );
                     },
                   ),
-                  _MenuSectionHeader(title: 'CONFIGURATION'),
+                  const _MenuSectionHeader(title: 'CONFIGURATION'),
                   if (user?.role == 'super_admin') ...[
                     _DrawerItem(
                       icon: Icons.admin_panel_settings_outlined,
@@ -115,7 +114,7 @@ class AppDrawer extends ConsumerWidget {
   Widget _buildCustomHeader(dynamic user) {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 30),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -136,7 +135,7 @@ class AppDrawer extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryRed.withOpacity(0.3),
+                  color: AppTheme.primaryRed.withValues(alpha: 0.3),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -172,9 +171,9 @@ class AppDrawer extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryRed.withOpacity(0.15),
+                    color: AppTheme.primaryRed.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
+                    border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     user?.role == 'super_admin' ? 'SYSTEM ADMIN' : 'GAME MASTER',
@@ -222,7 +221,7 @@ class _MenuSectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          color: AppTheme.grayText.withOpacity(0.5),
+          color: AppTheme.grayText.withValues(alpha: 0.5),
           fontSize: 11,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
@@ -275,13 +274,13 @@ class _DrawerItemState extends State<_DrawerItem> {
           gradient: widget.isSelected
               ? LinearGradient(
                   colors: [
-                    AppTheme.primaryRed.withOpacity(0.15),
-                    AppTheme.primaryRed.withOpacity(0.05),
+                    AppTheme.primaryRed.withValues(alpha: 0.15),
+                    AppTheme.primaryRed.withValues(alpha: 0.05),
                   ],
                 )
               : null,
           color: _isHovered && !widget.isSelected 
-              ? AppTheme.white.withOpacity(0.05) 
+              ? AppTheme.white.withValues(alpha: 0.05) 
               : Colors.transparent,
         ),
         child: ListTile(
@@ -314,7 +313,7 @@ class _DrawerItemState extends State<_DrawerItem> {
                     borderRadius: BorderRadius.circular(2),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryRed.withOpacity(0.5),
+                        color: AppTheme.primaryRed.withValues(alpha: 0.5),
                         blurRadius: 4,
                         spreadRadius: 1,
                       ),

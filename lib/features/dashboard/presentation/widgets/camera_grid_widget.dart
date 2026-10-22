@@ -98,14 +98,14 @@ class _CameraFeedState extends State<_CameraFeed> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: widget.isLive 
-                ? (_isHovered ? AppTheme.primaryRed : AppTheme.primaryRed.withOpacity(0.3)) 
+                ? (_isHovered ? AppTheme.primaryRed : AppTheme.primaryRed.withValues(alpha: 0.3)) 
                 : AppTheme.grayBorder,
               width: _isHovered ? 2 : 1,
             ),
             boxShadow: [
               if (widget.isLive && _isHovered)
                 BoxShadow(
-                  color: AppTheme.primaryRed.withOpacity(0.2),
+                  color: AppTheme.primaryRed.withValues(alpha: 0.2),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -122,7 +122,7 @@ class _CameraFeedState extends State<_CameraFeed> {
                   child: Image.network(
                     'https://media.giphy.com/media/oEI9uWUqW8K6A/giphy.gif',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox(),
+                    errorBuilder: (_, _, _) => const SizedBox(),
                   ),
                 ),
                 
@@ -134,11 +134,11 @@ class _CameraFeedState extends State<_CameraFeed> {
                       Icon(
                         widget.isLive ? Icons.videocam : Icons.videocam_off,
                         size: 40,
-                        color: widget.isLive ? AppTheme.white.withOpacity(0.5) : AppTheme.grayDisabled,
+                        color: widget.isLive ? AppTheme.white.withValues(alpha: 0.5) : AppTheme.grayDisabled,
                       ),
                       const Gap(8),
                       if (!widget.isLive)
-                        Text(
+                        const Text(
                           'FLUX INTERROMPU',
                           style: TextStyle(
                             color: AppTheme.grayDisabled,
@@ -162,7 +162,7 @@ class _CameraFeedState extends State<_CameraFeed> {
                     borderRadius: BorderRadius.circular(4),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       child: Text(
                         widget.label,
                         style: const TextStyle(
@@ -190,12 +190,12 @@ class _CameraFeedState extends State<_CameraFeed> {
                 if (_isHovered && widget.isLive)
                   Positioned.fill(
                     child: Container(
-                      color: AppTheme.primaryRed.withOpacity(0.05),
+                      color: AppTheme.primaryRed.withValues(alpha: 0.05),
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryRed.withOpacity(0.8),
+                            color: AppTheme.primaryRed.withValues(alpha: 0.8),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 32),
@@ -244,7 +244,7 @@ class _CameraStatusState extends State<_CameraStatus> with SingleTickerProviderS
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(4),
         ),
         child: const Text(
@@ -295,7 +295,7 @@ class _ScanlineOverlay extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: List.generate(
             100,
-            (index) => index % 2 == 0 ? Colors.transparent : Colors.black.withOpacity(0.05),
+            (index) => index % 2 == 0 ? Colors.transparent : Colors.black.withValues(alpha: 0.05),
           ),
         ),
       ),
@@ -308,7 +308,7 @@ class _CameraCorners extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return const Stack(
       children: [
         Positioned(
           top: 0,
@@ -348,10 +348,10 @@ class _CornerAccent extends StatelessWidget {
       height: 15,
       decoration: BoxDecoration(
         border: Border(
-          top: isTop ? BorderSide(color: AppTheme.white.withOpacity(0.2), width: 1.5) : BorderSide.none,
-          bottom: !isTop ? BorderSide(color: AppTheme.white.withOpacity(0.2), width: 1.5) : BorderSide.none,
-          left: isLeft ? BorderSide(color: AppTheme.white.withOpacity(0.2), width: 1.5) : BorderSide.none,
-          right: !isLeft ? BorderSide(color: AppTheme.white.withOpacity(0.2), width: 1.5) : BorderSide.none,
+          top: isTop ? BorderSide(color: AppTheme.white.withValues(alpha: 0.2), width: 1.5) : BorderSide.none,
+          bottom: !isTop ? BorderSide(color: AppTheme.white.withValues(alpha: 0.2), width: 1.5) : BorderSide.none,
+          left: isLeft ? BorderSide(color: AppTheme.white.withValues(alpha: 0.2), width: 1.5) : BorderSide.none,
+          right: !isLeft ? BorderSide(color: AppTheme.white.withValues(alpha: 0.2), width: 1.5) : BorderSide.none,
         ),
       ),
     );

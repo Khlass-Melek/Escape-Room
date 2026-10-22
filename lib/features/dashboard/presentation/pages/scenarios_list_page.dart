@@ -34,7 +34,7 @@ class ScenariosListPage extends ConsumerWidget {
             center: Alignment.topCenter,
             radius: 1.5,
             colors: [
-              AppTheme.secondaryBlack.withOpacity(0.4),
+              AppTheme.secondaryBlack.withValues(alpha: 0.4),
               AppTheme.primaryBlack,
             ],
           ),
@@ -143,7 +143,7 @@ class _ScenarioCardState extends State<_ScenarioCard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: _isHovered ? AppTheme.primaryRed.withOpacity(0.2) : Colors.black.withOpacity(0.6),
+                color: _isHovered ? AppTheme.primaryRed.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.6),
                 blurRadius: _isHovered ? 30 : 20,
                 offset: Offset(0, _isHovered ? 12 : 8),
               ),
@@ -174,9 +174,9 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                       end: Alignment.bottomCenter,
                       stops: const [0.0, 0.4, 0.8, 1.0],
                       colors: [
-                        Colors.black.withOpacity(0.2),
+                        Colors.black.withValues(alpha: 0.2),
                         Colors.transparent,
-                        Colors.black.withOpacity(0.8),
+                        Colors.black.withValues(alpha: 0.8),
                         Colors.black,
                       ],
                     ),
@@ -201,7 +201,7 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: (widget.isSessionActive ? AppTheme.primaryRed : AppTheme.successGreen).withOpacity(0.4),
+                                  color: (widget.isSessionActive ? AppTheme.primaryRed : AppTheme.successGreen).withValues(alpha: 0.4),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -289,7 +289,7 @@ class _ScenarioCardState extends State<_ScenarioCard> {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.primaryRed.withOpacity(0.5), width: 2),
+                        border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.5), width: 2),
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
@@ -313,12 +313,12 @@ class _InfoIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppTheme.white.withOpacity(0.7), size: 14),
+        Icon(icon, color: AppTheme.white.withValues(alpha: 0.7), size: 14),
         const SizedBox(width: 6),
         Text(
           label,
           style: TextStyle(
-            color: AppTheme.white.withOpacity(0.7),
+            color: AppTheme.white.withValues(alpha: 0.7),
             fontSize: 11,
             fontWeight: FontWeight.bold,
           ),

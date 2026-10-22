@@ -48,7 +48,7 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           )
@@ -63,7 +63,7 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.15),
+                  color: Colors.teal.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.videocam_rounded, color: Colors.teal, size: 20),
@@ -89,9 +89,9 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.15),
+                    color: Colors.red.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.red.withOpacity(0.5)),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -148,7 +148,7 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
               decoration: BoxDecoration(
                 color: Colors.black45,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.grayBorder.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.grayBorder.withValues(alpha: 0.3)),
               ),
               child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -171,12 +171,12 @@ class _CameraViewerWidgetState extends State<CameraViewerWidget> {
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  _isVisible ? Colors.red.withOpacity(0.1) : Colors.teal.withOpacity(0.1),
+                  _isVisible ? Colors.red.withValues(alpha: 0.1) : Colors.teal.withValues(alpha: 0.1),
               foregroundColor: _isVisible ? Colors.red : Colors.teal,
               side: BorderSide(
                 color: _isVisible
-                    ? Colors.red.withOpacity(0.5)
-                    : Colors.teal.withOpacity(0.5),
+                    ? Colors.red.withValues(alpha: 0.5)
+                    : Colors.teal.withValues(alpha: 0.5),
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

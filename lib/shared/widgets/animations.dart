@@ -71,7 +71,7 @@ class HoverScaleCard extends StatefulWidget {
 class _HoverScaleCardState extends State<HoverScaleCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  bool _isHovering = false;
+  final bool _isHovering = false;
 
   @override
   void initState() {

@@ -22,9 +22,7 @@ import 'package:escape_room_admin/features/dashboard/presentation/widgets/weight
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/sound_enigma_widget.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/voice_enigma_widget.dart';
 import 'package:escape_room_admin/features/dashboard/presentation/widgets/tictactoe_enigma_widget.dart';
-import 'package:escape_room_admin/features/dashboard/presentation/widgets/camera_viewer_widget.dart';
 import 'package:escape_room_admin/core/services/mqtt_service.dart';
-import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/shared/utils/responsive.dart';
 
@@ -216,7 +214,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             center: Alignment.center,
             radius: 1.5,
             colors: [
-              AppTheme.secondaryBlack.withOpacity(0.5),
+              AppTheme.secondaryBlack.withValues(alpha: 0.5),
               AppTheme.primaryBlack,
             ],
           ),
@@ -480,7 +478,7 @@ class _DashboardControlPanelState extends ConsumerState<_DashboardControlPanel>
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -492,7 +490,7 @@ class _DashboardControlPanelState extends ConsumerState<_DashboardControlPanel>
           // Tab bar header
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.primaryBlack.withOpacity(0.5),
+              color: AppTheme.primaryBlack.withValues(alpha: 0.5),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: TabBar(
@@ -561,7 +559,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isRunning ? AppTheme.primaryRed.withOpacity(0.1) : AppTheme.successGreen.withOpacity(0.1),
+        color: isRunning ? AppTheme.primaryRed.withValues(alpha: 0.1) : AppTheme.successGreen.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: isRunning ? AppTheme.primaryRed : AppTheme.successGreen,
@@ -579,7 +577,7 @@ class _StatusBadge extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: (isRunning ? AppTheme.primaryRed : AppTheme.successGreen).withOpacity(0.5),
+                  color: (isRunning ? AppTheme.primaryRed : AppTheme.successGreen).withValues(alpha: 0.5),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
@@ -626,7 +624,7 @@ class _DigitalTimer extends StatelessWidget {
         border: Border.all(color: isLow ? AppTheme.primaryRed : AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryRed.withOpacity(isLow ? 0.3 : 0.1),
+            color: AppTheme.primaryRed.withValues(alpha: isLow ? 0.3 : 0.1),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -674,7 +672,7 @@ class _ActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

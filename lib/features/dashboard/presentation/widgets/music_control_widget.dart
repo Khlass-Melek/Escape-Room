@@ -107,7 +107,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -129,7 +129,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryRed.withOpacity(0.1),
+                      color: AppTheme.primaryRed.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.music_note_rounded, color: AppTheme.primaryRed, size: 20),
@@ -162,7 +162,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                   height: 250,
                   child: ListView.separated(
                     itemCount: state.tracks.length,
-                    separatorBuilder: (_, __) => Gap(widget.isCompact ? 4 : 8),
+                    separatorBuilder: (_, _) => Gap(widget.isCompact ? 4 : 8),
                     itemBuilder: (context, index) {
                       final track = state.tracks[index];
                       final isCurrent = state.currentTrackIndex == index;
@@ -187,7 +187,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                         ),
                         subtitle: Text(track.filename, style: const TextStyle(color: AppTheme.grayText, fontSize: 9)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        tileColor: isCurrent ? AppTheme.primaryRed.withOpacity(0.1) : AppTheme.primaryBlack.withOpacity(0.3),
+                        tileColor: isCurrent ? AppTheme.primaryRed.withValues(alpha: 0.1) : AppTheme.primaryBlack.withValues(alpha: 0.3),
                       );
                     },
                   ),
@@ -247,7 +247,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                         overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
                         activeTrackColor: AppTheme.primaryRed,
-                        inactiveTrackColor: AppTheme.grayBorder.withOpacity(0.3),
+                        inactiveTrackColor: AppTheme.grayBorder.withValues(alpha: 0.3),
                         thumbColor: AppTheme.primaryRed,
                       ),
                       child: Slider(
@@ -291,7 +291,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                           color: AppTheme.primaryRed,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryRed.withOpacity(0.4),
+                              color: AppTheme.primaryRed.withValues(alpha: 0.4),
                               blurRadius: 15,
                               spreadRadius: 2,
                             ),
@@ -329,7 +329,7 @@ class _MusicControlWidgetState extends ConsumerState<MusicControlWidget> {
                         trackHeight: 2,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
                         activeTrackColor: AppTheme.grayText,
-                        inactiveTrackColor: AppTheme.grayBorder.withOpacity(0.2),
+                        inactiveTrackColor: AppTheme.grayBorder.withValues(alpha: 0.2),
                         thumbColor: AppTheme.grayText,
                       ),
                       child: Slider(

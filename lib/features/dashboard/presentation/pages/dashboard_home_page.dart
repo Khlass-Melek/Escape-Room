@@ -33,7 +33,7 @@ class DashboardHomePage extends ConsumerWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppTheme.secondaryBlack.withOpacity(0.3),
+              AppTheme.secondaryBlack.withValues(alpha: 0.3),
               AppTheme.primaryBlack,
             ],
           ),
@@ -44,7 +44,7 @@ class DashboardHomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (isMobile) ...[
-                _GlobalStat(label: 'SALLES ACTIVES', value: '01 / 06', icon: Icons.sensors_rounded, isFullWidth: true),
+                const _GlobalStat(label: 'SALLES ACTIVES', value: '01 / 06', icon: Icons.sensors_rounded, isFullWidth: true),
                 const Gap(24),
               ],
               Row(
@@ -69,7 +69,7 @@ class DashboardHomePage extends ConsumerWidget {
                         Text(
                           isMobile ? 'STATISTIQUES LIVE' : 'STATISTIQUES DYNAMIQUES EN TEMPS RÉEL',
                           style: TextStyle(
-                            color: AppTheme.primaryRed.withOpacity(0.7),
+                            color: AppTheme.primaryRed.withValues(alpha: 0.7),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,
@@ -79,7 +79,7 @@ class DashboardHomePage extends ConsumerWidget {
                     ),
                   ),
                   if (!isMobile)
-                    _GlobalStat(label: 'SALLES ACTIVES', value: '01 / 06', icon: Icons.sensors_rounded),
+                    const _GlobalStat(label: 'SALLES ACTIVES', value: '01 / 06', icon: Icons.sensors_rounded),
                 ],
               ),
               SizedBox(height: isMobile ? 32 : 40),
@@ -203,12 +203,12 @@ class _DashboardCard extends StatelessWidget {
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: active ? AppTheme.primaryRed.withOpacity(0.5) : AppTheme.grayBorder,
+          color: active ? AppTheme.primaryRed.withValues(alpha: 0.5) : AppTheme.grayBorder,
           width: 0.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -233,8 +233,8 @@ class _DashboardCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppTheme.secondaryBlack.withOpacity(0.92),
-                      AppTheme.primaryBlack.withOpacity(0.85),
+                      AppTheme.secondaryBlack.withValues(alpha: 0.92),
+                      AppTheme.primaryBlack.withValues(alpha: 0.85),
                     ],
                   ),
                 ),
@@ -274,7 +274,7 @@ class _DashboardCard extends StatelessWidget {
                   _DynamicDifficultyRow(level: dynamicDifficulty, hasData: hasData),
 
                   const Gap(10),
-                  Divider(color: AppTheme.grayBorder.withOpacity(0.5), height: 1),
+                  Divider(color: AppTheme.grayBorder.withValues(alpha: 0.5), height: 1),
                   const Gap(10),
 
                   // ── Big success rate ───────────────────────────────────
@@ -297,7 +297,7 @@ class _DashboardCard extends StatelessWidget {
                               fontWeight: FontWeight.w900,
                               fontFamily: 'monospace',
                               height: 1,
-                              shadows: [Shadow(color: successColor.withOpacity(0.35), blurRadius: 16)],
+                              shadows: [Shadow(color: successColor.withValues(alpha: 0.35), blurRadius: 16)],
                             ),
                           ),
                         ],
@@ -315,7 +315,7 @@ class _DashboardCard extends StatelessWidget {
                   ),
 
                   const Gap(10),
-                  Divider(color: AppTheme.grayBorder.withOpacity(0.5), height: 1),
+                  Divider(color: AppTheme.grayBorder.withValues(alpha: 0.5), height: 1),
                   const Gap(10),
 
                   // ── 2×2 stats grid — fills remaining space ──────────────
@@ -420,13 +420,13 @@ class _SmallStatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
       decoration: BoxDecoration(
-        color: AppTheme.primaryBlack.withOpacity(0.5),
+        color: AppTheme.primaryBlack.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.grayBorder.withOpacity(0.4), width: 0.5),
+        border: Border.all(color: AppTheme.grayBorder.withValues(alpha: 0.4), width: 0.5),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 12, color: color.withOpacity(0.8)),
+          Icon(icon, size: 12, color: color.withValues(alpha: 0.8)),
           const Gap(3),
           Text(value,
               style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
@@ -452,14 +452,14 @@ class _BigStatTile extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.primaryBlack.withOpacity(0.55),
+        color: AppTheme.primaryBlack.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2), width: 0.8),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 0.8),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: isMobile ? 22 : 28, color: color.withOpacity(0.85)),
+          Icon(icon, size: isMobile ? 22 : 28, color: color.withValues(alpha: 0.85)),
           Gap(isMobile ? 4 : 8),
           Text(
             value,
@@ -468,7 +468,7 @@ class _BigStatTile extends StatelessWidget {
               fontSize: isMobile ? 20 : 28,
               fontWeight: FontWeight.w900,
               fontFamily: 'monospace',
-              shadows: [Shadow(color: color.withOpacity(0.3), blurRadius: 10)],
+              shadows: [Shadow(color: color.withValues(alpha: 0.3), blurRadius: 10)],
             ),
           ),
           Gap(isMobile ? 2 : 4),

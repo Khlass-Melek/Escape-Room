@@ -1,7 +1,5 @@
 import 'package:escape_room_admin/core/services/mqtt_service.dart';
-import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/core/theme/app_theme.dart';
-import 'package:escape_room_admin/shared/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'dart:convert';
@@ -87,7 +85,7 @@ class _CablesEnigmaWidgetState extends State<CablesEnigmaWidget> {
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -102,7 +100,7 @@ class _CablesEnigmaWidgetState extends State<CablesEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryRed.withOpacity(0.1),
+                  color: AppTheme.primaryRed.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.cable_rounded, color: AppTheme.primaryRed, size: 20),
@@ -187,7 +185,7 @@ class _CablesEnigmaWidgetState extends State<CablesEnigmaWidget> {
                   onPressed: _resetEnigma,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.grayText,
-                    side: BorderSide(color: AppTheme.grayText.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.grayText.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -207,7 +205,7 @@ class _CablesEnigmaWidgetState extends State<CablesEnigmaWidget> {
                   onPressed: _bypassEnigma,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.successGreen,
-                    side: BorderSide(color: AppTheme.successGreen.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.successGreen.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),

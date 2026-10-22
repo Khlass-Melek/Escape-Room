@@ -97,7 +97,7 @@ class _RoomDetailPageState extends State<RoomDetailPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(widget.room.name),
-        backgroundColor: Colors.black.withOpacity(0.6),
+        backgroundColor: Colors.black.withValues(alpha: 0.6),
         elevation: 0,
       ),
       body: SafeArea(
@@ -225,9 +225,9 @@ class _RoomDetailPageState extends State<RoomDetailPage> {
                     msg.timestamp.toString().substring(0, 19), // YYYY-MM-DD HH:mm:ss
                     style: TextStyle(color: Colors.grey[400]),
                   ),
-                  trailing: Text(
+                  trailing: const Text(
                     'GM',
-                    style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
                   ),
                 ),
               );

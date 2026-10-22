@@ -28,9 +28,9 @@ class SubAdminHistoryDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Historique: \${user.username}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:escape_room_admin/core/services/mqtt_service.dart';
-import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -106,7 +105,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -117,7 +116,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.15),
+                  color: Colors.blueGrey.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.scale_rounded, color: Colors.blueGrey, size: 20),
@@ -134,7 +133,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _isLedOn ? AppTheme.successGreen : AppTheme.primaryRed,
-                  boxShadow: [BoxShadow(color: (_isLedOn ? AppTheme.successGreen : AppTheme.primaryRed).withOpacity(0.6), blurRadius: 6)],
+                  boxShadow: [BoxShadow(color: (_isLedOn ? AppTheme.successGreen : AppTheme.primaryRed).withValues(alpha: 0.6), blurRadius: 6)],
                 ),
               ),
             ],
@@ -147,7 +146,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
             decoration: BoxDecoration(
               color: AppTheme.primaryBlack,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: inRange ? AppTheme.successGreen.withOpacity(0.5) : AppTheme.grayBorder, width: 0.5),
+              border: Border.all(color: inRange ? AppTheme.successGreen.withValues(alpha: 0.5) : AppTheme.grayBorder, width: 0.5),
             ),
             child: Column(
               children: [
@@ -172,7 +171,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
                       ],
                     ),
                     // Flèche
-                    Icon(Icons.arrow_forward_rounded, color: AppTheme.grayText.withOpacity(0.4), size: 20),
+                    Icon(Icons.arrow_forward_rounded, color: AppTheme.grayText.withValues(alpha: 0.4), size: 20),
                     // Poids cible
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -181,7 +180,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
                         const Gap(4),
                         Text(
                           _targetWeight > 0 ? '${_targetWeight.toStringAsFixed(0)} ±${_margin.toStringAsFixed(0)}g' : '—',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppTheme.warningOrange,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -245,7 +244,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
             decoration: BoxDecoration(
               color: AppTheme.primaryBlack,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _isSolved ? AppTheme.successGreen.withOpacity(0.4) : AppTheme.grayBorder, width: 0.5),
+              border: Border.all(color: _isSolved ? AppTheme.successGreen.withValues(alpha: 0.4) : AppTheme.grayBorder, width: 0.5),
             ),
             child: Text(
               _statusText.toUpperCase(),
@@ -267,7 +266,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
                   onPressed: _reset,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.grayText,
-                    side: BorderSide(color: AppTheme.grayText.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.grayText.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -284,7 +283,7 @@ class _WeightEnigmaWidgetState extends State<WeightEnigmaWidget> {
                   onPressed: _bypass,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.successGreen,
-                    side: BorderSide(color: AppTheme.successGreen.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.successGreen.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),

@@ -345,7 +345,9 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
 
     // In GM vs Player mode, GM plays as 'O'
     if (_gameState.mode == TicTacToeMode.gmVsPlayer &&
-        _gameState.currentTurn != 'O') return;
+        _gameState.currentTurn != 'O') {
+      return;
+    }
 
     _makeMove(index);
   }
@@ -405,7 +407,7 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
         border: Border.all(color: _grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -448,7 +450,7 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _primaryRed.withOpacity(0.1),
+              color: _primaryRed.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.grid_3x3_rounded, color: _primaryRed, size: 20),
@@ -481,9 +483,9 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _primaryRed.withOpacity(0.1),
+                  color: _primaryRed.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: _primaryRed.withOpacity(0.4)),
+                  border: Border.all(color: _primaryRed.withValues(alpha: 0.4)),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -530,12 +532,12 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: statusColor.withOpacity(0.05),
+      color: statusColor.withValues(alpha: 0.05),
       child: Row(
         children: [
           AnimatedBuilder(
             animation: _pulseController,
-            builder: (_, __) => Icon(
+            builder: (_, _) => Icon(
               statusIcon,
               color: isWaiting
                   ? Color.lerp(_warningOrange, Colors.white, _pulseController.value * 0.3)!
@@ -638,15 +640,15 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _primaryRed.withOpacity(0.05),
+              color: _primaryRed.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _primaryRed.withOpacity(0.2)),
+              border: Border.all(color: _primaryRed.withValues(alpha: 0.2)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(Icons.info_outline_rounded, color: _primaryRed, size: 14),
-                const Gap(8),
-                const Expanded(
+                Icon(Icons.info_outline_rounded, color: _primaryRed, size: 14),
+                Gap(8),
+                Expanded(
                   child: Text(
                     'Vous jouez O — le joueur joue X depuis le Raspberry Pi',
                     style: TextStyle(color: _grayText, fontSize: 10),
@@ -699,29 +701,29 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
                 onTap: isGmTurn ? () => _onGmCellTap(index) : null,
                 child: AnimatedBuilder(
                   animation: _winController,
-                  builder: (_, __) {
+                  builder: (_, _) {
                     final isGlowing = isWinCell && _gameState.winner != null && _gameState.winner != 'draw';
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         color: isGlowing
-                            ? (cellValue == 'X' ? _primaryRed : _warningOrange).withOpacity(0.15 + _winController.value * 0.1)
+                            ? (cellValue == 'X' ? _primaryRed : _warningOrange).withValues(alpha: 0.15 + _winController.value * 0.1)
                             : isGmTurn
-                                ? _primaryRed.withOpacity(0.05)
+                                ? _primaryRed.withValues(alpha: 0.05)
                                 : _secondaryBlack,
                         border: Border.all(
                           color: isGlowing
-                              ? (cellValue == 'X' ? _primaryRed : _warningOrange).withOpacity(0.6)
+                              ? (cellValue == 'X' ? _primaryRed : _warningOrange).withValues(alpha: 0.6)
                               : isGmTurn
-                                  ? _primaryRed.withOpacity(0.3)
-                                  : _grayBorder.withOpacity(0.5),
+                                  ? _primaryRed.withValues(alpha: 0.3)
+                                  : _grayBorder.withValues(alpha: 0.5),
                           width: isGlowing ? 2 : 1,
                         ),
                         boxShadow: isGlowing
                             ? [
                                 BoxShadow(
-                                  color: (cellValue == 'X' ? _primaryRed : _warningOrange).withOpacity(0.3 * _winController.value),
+                                  color: (cellValue == 'X' ? _primaryRed : _warningOrange).withValues(alpha: 0.3 * _winController.value),
                                   blurRadius: 12,
                                   spreadRadius: 2,
                                 )
@@ -732,7 +734,7 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
                         child: cellValue.isNotEmpty
                             ? _CellSymbol(symbol: cellValue)
                             : isGmTurn
-                                ? Icon(Icons.add_rounded, color: _primaryRed.withOpacity(0.3), size: 20)
+                                ? Icon(Icons.add_rounded, color: _primaryRed.withValues(alpha: 0.3), size: 20)
                                 : null,
                       ),
                     );
@@ -792,9 +794,9 @@ class _TicTacToeControlWidgetState extends State<TicTacToeControlWidget>
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.06),
+        color: statusColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.25)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -866,7 +868,7 @@ class _CellSymbol extends StatelessWidget {
           fontSize: 32,
           fontWeight: FontWeight.w900,
           fontFamily: 'monospace',
-          shadows: [Shadow(color: _primaryRed.withOpacity(0.4), blurRadius: 12)],
+          shadows: [Shadow(color: _primaryRed.withValues(alpha: 0.4), blurRadius: 12)],
         ),
       );
     }
@@ -877,7 +879,7 @@ class _CellSymbol extends StatelessWidget {
         fontSize: 32,
         fontWeight: FontWeight.w900,
         fontFamily: 'monospace',
-        shadows: [Shadow(color: _warningOrange.withOpacity(0.4), blurRadius: 12)],
+        shadows: [Shadow(color: _warningOrange.withValues(alpha: 0.4), blurRadius: 12)],
       ),
     );
   }
@@ -920,10 +922,10 @@ class _ModeButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : _primaryBlack,
+          color: isSelected ? color.withValues(alpha: 0.1) : _primaryBlack,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.6) : isDisabled ? _grayBorder.withOpacity(0.3) : _grayBorder,
+            color: isSelected ? color.withValues(alpha: 0.6) : isDisabled ? _grayBorder.withValues(alpha: 0.3) : _grayBorder,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -961,7 +963,7 @@ class _ModeButton extends StatelessWidget {
             Text(
               sublabel,
               style: TextStyle(
-                color: isDisabled ? _grayDisabled.withOpacity(0.6) : (isSelected ? color.withOpacity(0.7) : _grayText.withOpacity(0.6)),
+                color: isDisabled ? _grayDisabled.withValues(alpha: 0.6) : (isSelected ? color.withValues(alpha: 0.7) : _grayText.withValues(alpha: 0.6)),
                 fontSize: 8,
                 fontWeight: FontWeight.bold,
               ),
@@ -1033,10 +1035,10 @@ class _AiDifficultySelector extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 6),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? color.withOpacity(0.12) : _primaryBlack,
+                    color: isSelected ? color.withValues(alpha: 0.12) : _primaryBlack,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isSelected ? color.withOpacity(0.7) : _grayBorder,
+                      color: isSelected ? color.withValues(alpha: 0.7) : _grayBorder,
                       width: isSelected ? 1.5 : 0.5,
                     ),
                   ),
@@ -1078,21 +1080,21 @@ class _PrimaryActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isDisabled ? _grayDisabled.withOpacity(0.3) : _primaryRed,
+          color: isDisabled ? _grayDisabled.withValues(alpha: 0.3) : _primaryRed,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isDisabled
               ? []
-              : [BoxShadow(color: _primaryRed.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+              : [BoxShadow(color: _primaryRed.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white.withOpacity(isDisabled ? 0.3 : 1), size: 18),
+            Icon(icon, color: Colors.white.withValues(alpha: isDisabled ? 0.3 : 1), size: 18),
             const Gap(8),
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(isDisabled ? 0.3 : 1),
+                color: Colors.white.withValues(alpha: isDisabled ? 0.3 : 1),
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
                 letterSpacing: 1,

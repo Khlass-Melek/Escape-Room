@@ -100,7 +100,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'RAPPORT DE MISSION',
                       style: TextStyle(
                         color: AppTheme.white,
@@ -124,7 +124,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                   const Gap(8),
                   ref.watch(scenarioProvider).when(
                     data: (scenarios) => DropdownButtonFormField<String>(
-                      value: _selectedScenarioId,
+                      initialValue: _selectedScenarioId,
                       dropdownColor: AppTheme.secondaryBlack,
                       style: const TextStyle(color: AppTheme.white),
                       decoration: InputDecoration(
@@ -139,7 +139,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                       onChanged: (val) => setState(() => _selectedScenarioId = val),
                     ),
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (_, __) => const Text('Erreur de chargement', style: TextStyle(color: AppTheme.secondaryRed)),
+                    error: (_, _) => const Text('Erreur de chargement', style: TextStyle(color: AppTheme.secondaryRed)),
                   ),
                   const Gap(24),
                 ],
@@ -181,7 +181,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                       const Text('MISSION RÉUSSIE ?', style: TextStyle(color: AppTheme.white, fontWeight: FontWeight.bold)),
                       Switch(
                         value: _isSuccess,
-                        activeColor: AppTheme.successGreen,
+                        activeThumbColor: AppTheme.successGreen,
                         onChanged: (v) => setState(() => _isSuccess = v),
                       ),
                     ],
@@ -256,7 +256,7 @@ class _GameReportFormState extends ConsumerState<GameReportForm> {
                           await ref.read(gameReportProvider.notifier).submitReport(report);
                           if (mounted) Navigator.of(context).pop();
                         },
-                        child: Text('PLUS TARD', style: TextStyle(color: AppTheme.grayText)),
+                        child: const Text('PLUS TARD', style: TextStyle(color: AppTheme.grayText)),
                       ),
                     ),
                     const Gap(16),

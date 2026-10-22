@@ -198,7 +198,7 @@ class _EnigmaFormDialogState extends State<EnigmaFormDialog> {
                         ),
                         Switch(
                           value: _isActive,
-                          activeColor: AppTheme.primaryRed,
+                          activeThumbColor: AppTheme.primaryRed,
                           onChanged: (val) => setState(() => _isActive = val),
                         ),
                       ],

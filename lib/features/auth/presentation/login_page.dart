@@ -84,7 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppTheme.primaryRed.withOpacity(0.05),
+                  AppTheme.primaryRed.withValues(alpha: 0.05),
                   AppTheme.primaryBlack,
                   AppTheme.primaryBlack,
                 ],
@@ -191,7 +191,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.secondaryRed.withOpacity(0.1),
+                                  color: AppTheme.secondaryRed.withValues(alpha: 0.1),
                                   border: Border.all(color: AppTheme.secondaryRed),
                                   borderRadius: BorderRadius.circular(4),
                                 ),

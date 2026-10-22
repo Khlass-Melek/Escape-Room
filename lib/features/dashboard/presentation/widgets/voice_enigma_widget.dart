@@ -107,7 +107,7 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +118,7 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.15),
+                  color: Colors.purple.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.record_voice_over_rounded, color: Colors.purpleAccent, size: 20),
@@ -145,8 +145,8 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _isSuccess 
-                    ? AppTheme.successGreen.withOpacity(0.5) 
-                    : AppTheme.primaryRed.withOpacity(0.5), 
+                    ? AppTheme.successGreen.withValues(alpha: 0.5) 
+                    : AppTheme.primaryRed.withValues(alpha: 0.5), 
                 width: 0.5
               ),
             ),
@@ -241,13 +241,13 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
                 child: ElevatedButton.icon(
                   onPressed: _sendManualChallenge,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent.withOpacity(0.2),
+                    backgroundColor: Colors.purpleAccent.withValues(alpha: 0.2),
                     foregroundColor: Colors.purpleAccent,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: Colors.purpleAccent.withOpacity(0.5)),
+                      side: BorderSide(color: Colors.purpleAccent.withValues(alpha: 0.5)),
                     ),
                   ),
                   icon: const Icon(Icons.send_rounded, size: 16),
@@ -266,8 +266,8 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: _isSuccess 
-                  ? AppTheme.successGreen.withOpacity(0.4) 
-                  : AppTheme.primaryRed.withOpacity(0.4), 
+                  ? AppTheme.successGreen.withValues(alpha: 0.4) 
+                  : AppTheme.primaryRed.withValues(alpha: 0.4), 
                 width: 0.5
               ),
             ),
@@ -291,7 +291,7 @@ class _VoiceEnigmaWidgetState extends ConsumerState<VoiceEnigmaWidget> {
                   onPressed: _reset,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.grayText,
-                    side: BorderSide(color: AppTheme.grayText.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.grayText.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),

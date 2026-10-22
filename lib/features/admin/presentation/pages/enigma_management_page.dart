@@ -64,9 +64,9 @@ class EnigmaManagementPage extends ConsumerWidget {
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.secondaryBlack,
         title: const Text('Supprimer', style: TextStyle(color: AppTheme.white)),
-        content: Text(
+        content: const Text(
           'Voulez-vous vraiment supprimer "\${enigma.name}"?',
-          style: const TextStyle(color: AppTheme.white),
+          style: TextStyle(color: AppTheme.white),
         ),
         actions: [
           TextButton(
@@ -212,7 +212,7 @@ class EnigmaManagementPage extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 100),
             child: Text(
               'Aucune énigme trouvée',
-              style: TextStyle(color: AppTheme.grayText.withOpacity(0.5), fontSize: 18),
+              style: TextStyle(color: AppTheme.grayText.withValues(alpha: 0.5), fontSize: 18),
             ),
           ),
         ),
@@ -257,10 +257,10 @@ class EnigmaManagementPage extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: enigma.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                          color: enigma.isActive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: enigma.isActive ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+                            color: enigma.isActive ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(

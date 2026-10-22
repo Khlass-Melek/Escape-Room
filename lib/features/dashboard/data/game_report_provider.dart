@@ -116,7 +116,7 @@ final scenarioStatsProvider = Provider.family<Map<String, dynamic>, String>((ref
       'dynamicDifficulty': 0,
       'isLoading': true,
     },
-    error: (_, __) => {
+    error: (_, _) => {
       'successRate': 0.0,
       'avgTime': '--:--',
       'totalGames': 0,

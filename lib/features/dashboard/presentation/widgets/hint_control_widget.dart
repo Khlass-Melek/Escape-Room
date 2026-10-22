@@ -168,7 +168,7 @@ class _HintControlWidgetState extends ConsumerState<HintControlWidget> {
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -182,7 +182,7 @@ class _HintControlWidgetState extends ConsumerState<HintControlWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningOrange.withOpacity(0.1),
+                  color: AppTheme.warningOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.lightbulb_rounded, color: AppTheme.warningOrange, size: 20),
@@ -208,7 +208,7 @@ class _HintControlWidgetState extends ConsumerState<HintControlWidget> {
               color: AppTheme.primaryBlack,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: currentHint != null ? AppTheme.warningOrange.withOpacity(0.3) : AppTheme.grayBorder,
+                color: currentHint != null ? AppTheme.warningOrange.withValues(alpha: 0.3) : AppTheme.grayBorder,
                 width: 1,
               ),
             ),

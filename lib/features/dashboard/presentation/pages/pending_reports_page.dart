@@ -46,7 +46,7 @@ class PendingReportsPage extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline_rounded, color: AppTheme.successGreen.withOpacity(0.5), size: 64),
+                  Icon(Icons.check_circle_outline_rounded, color: AppTheme.successGreen.withValues(alpha: 0.5), size: 64),
                   const Gap(16),
                   const Text('TOUS LES RAPPORTS SONT À JOUR', style: TextStyle(color: AppTheme.grayText, fontWeight: FontWeight.bold)),
                 ],
@@ -71,7 +71,7 @@ class PendingReportsPage extends ConsumerWidget {
                     contentPadding: const EdgeInsets.all(16),
                     leading: Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: AppTheme.primaryRed.withOpacity(0.1), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: AppTheme.primaryRed.withValues(alpha: 0.1), shape: BoxShape.circle),
                       child: const Icon(Icons.pending_actions_rounded, color: AppTheme.primaryRed),
                     ),
                     title: Text(scenario?.name ?? 'Chargement...', style: const TextStyle(color: AppTheme.white, fontWeight: FontWeight.bold)),

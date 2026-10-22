@@ -14,7 +14,7 @@ class TicTacToeEnigmaWidget extends StatefulWidget {
 class _TicTacToeEnigmaWidgetState extends State<TicTacToeEnigmaWidget> {
   String _state = 'disconnected'; // locked, waiting, game, revenge, disconnected
   String _turn = '';
-  List<List<String>> _board = [
+  final List<List<String>> _board = [
     ['', '', ''],
     ['', '', ''],
     ['', '', '']
@@ -121,7 +121,7 @@ class _TicTacToeEnigmaWidgetState extends State<TicTacToeEnigmaWidget> {
         color: AppTheme.secondaryBlack,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _state == 'game' && _opponentFound ? AppTheme.warningOrange : AppTheme.grayBorder, width: _state == 'game' && _opponentFound ? 1.5 : 0.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -132,7 +132,7 @@ class _TicTacToeEnigmaWidgetState extends State<TicTacToeEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.15),
+                  color: Colors.purple.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.grid_3x3_rounded, color: Colors.purple, size: 20),
@@ -197,7 +197,7 @@ class _TicTacToeEnigmaWidgetState extends State<TicTacToeEnigmaWidget> {
                onPressed: _reset,
                style: OutlinedButton.styleFrom(
                  foregroundColor: AppTheme.grayText,
-                 side: BorderSide(color: AppTheme.grayText.withOpacity(0.5)),
+                 side: BorderSide(color: AppTheme.grayText.withValues(alpha: 0.5)),
                  padding: const EdgeInsets.symmetric(vertical: 14),
                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                ),
@@ -225,9 +225,9 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.1),
+        backgroundColor: color.withValues(alpha: 0.1),
         foregroundColor: color,
-        side: BorderSide(color: color.withOpacity(0.5)),
+        side: BorderSide(color: color.withValues(alpha: 0.5)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 0,

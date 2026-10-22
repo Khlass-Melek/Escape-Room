@@ -169,7 +169,7 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
         
         for (final obj in objects) {
           final name = obj.name;
-          if (name == null || name.isEmpty || name == '.emptyFolderPlaceholder') continue;
+          if (name.isEmpty || name == '.emptyFolderPlaceholder') continue;
           
           final fullPath = p.isEmpty ? name : '$p/$name';
           
@@ -240,9 +240,9 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
       // Filter only audio files (check for null name & match extension)
       final audioExtensions = ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma', '.opus'];
       final audioFiles = fileObjects.where((f) {
-        if (f.name == null || f.name!.isEmpty) return false;
+        if (f.name.isEmpty) return false;
         // Skip folders (.emptyFolderPlaceholder and items without dots)
-        final name = f.name!.toLowerCase();
+        final name = f.name.toLowerCase();
         return audioExtensions.any((ext) => name.endsWith(ext));
       }).toList();
 
@@ -250,7 +250,7 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
 
       if (audioFiles.isEmpty) {
         // Check if maybe there are sub-folders
-        final folderNames = fileObjects.where((f) => f.name != null && !f.name!.contains('.')).map((f) => f.name).toList();
+        final folderNames = fileObjects.where((f) => !f.name.contains('.')).map((f) => f.name).toList();
         if (folderNames.isNotEmpty) {
           debugPrint('[importFromBucket] Found sub-folders: $folderNames — try specifying one as sous-dossier');
         }
@@ -261,11 +261,11 @@ class AudioNotifier extends AsyncNotifier<AudioState> {
       final inserts = <Map<String, dynamic>>[];
       for (final file in audioFiles) {
         // Build full path for the public URL
-        final filePath = path.isEmpty ? file.name! : '$path/${file.name}';
+        final filePath = path.isEmpty ? file.name : '$path/${file.name}';
         final publicUrl = _supabase.storage.from(bucketName).getPublicUrl(filePath);
 
         // Derive a clean title from the filename (remove extension)
-        final title = file.name!
+        final title = file.name
             .replaceAll(RegExp(r'\.(mp3|wav|ogg|aac|flac|m4a|wma|opus)$', caseSensitive: false), '')
             .replaceAll('_', ' ')
             .replaceAll('-', ' ');

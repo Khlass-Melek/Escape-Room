@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:escape_room_admin/core/services/mqtt_service.dart';
-import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -85,14 +84,14 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
 
   Color _cellColor(int index) {
     final isOn = _currentState[index] == 1;
-    if (_isSolved) return AppTheme.successGreen.withOpacity(0.3);
+    if (_isSolved) return AppTheme.successGreen.withValues(alpha: 0.3);
     if (_hasTarget) {
       final correct = _currentState[index] == _targetState[index];
-      if (isOn && correct) return AppTheme.successGreen.withOpacity(0.4);
-      if (isOn && !correct) return AppTheme.primaryRed.withOpacity(0.4);
+      if (isOn && correct) return AppTheme.successGreen.withValues(alpha: 0.4);
+      if (isOn && !correct) return AppTheme.primaryRed.withValues(alpha: 0.4);
     }
     return isOn
-        ? AppTheme.warningOrange.withOpacity(0.3)
+        ? AppTheme.warningOrange.withValues(alpha: 0.3)
         : AppTheme.primaryBlack;
   }
 
@@ -106,7 +105,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -121,7 +120,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningOrange.withOpacity(0.1),
+                  color: AppTheme.warningOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.toggle_on_rounded,
@@ -151,7 +150,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                       color: (_isSolved
                               ? AppTheme.successGreen
                               : AppTheme.warningOrange)
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                       blurRadius: 4,
                     )
                   ],
@@ -233,7 +232,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.grayText,
                     side: BorderSide(
-                        color: AppTheme.grayText.withOpacity(0.5)),
+                        color: AppTheme.grayText.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
@@ -257,7 +256,7 @@ class _SwitchesEnigmaWidgetState extends State<SwitchesEnigmaWidget> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.successGreen,
                     side: BorderSide(
-                        color: AppTheme.successGreen.withOpacity(0.5)),
+                        color: AppTheme.successGreen.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),

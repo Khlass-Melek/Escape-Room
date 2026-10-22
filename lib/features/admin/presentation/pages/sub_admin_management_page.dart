@@ -65,9 +65,9 @@ class SubAdminManagementPage extends ConsumerWidget {
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.secondaryBlack,
         title: const Text('Supprimer', style: TextStyle(color: AppTheme.white)),
-        content: Text(
+        content: const Text(
           'Voulez-vous vraiment supprimer \${user.username}?',
-          style: const TextStyle(color: AppTheme.white),
+          style: TextStyle(color: AppTheme.white),
         ),
         actions: [
           TextButton(
@@ -200,7 +200,7 @@ class SubAdminManagementPage extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 100),
             child: Text(
               'Aucun sous-admin trouvé',
-              style: TextStyle(color: AppTheme.grayText.withOpacity(0.5), fontSize: 18),
+              style: TextStyle(color: AppTheme.grayText.withValues(alpha: 0.5), fontSize: 18),
             ),
           ),
         ),
@@ -222,7 +222,7 @@ class SubAdminManagementPage extends ConsumerWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - (300 + 48)),
                 child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(AppTheme.primaryBlack.withOpacity(0.5)),
+                  headingRowColor: WidgetStateProperty.all(AppTheme.primaryBlack.withValues(alpha: 0.5)),
                   dataRowMaxHeight: 70,
                   dataRowMinHeight: 70,
                   horizontalMargin: 24,
@@ -241,7 +241,7 @@ class SubAdminManagementPage extends ConsumerWidget {
                           Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: AppTheme.primaryRed.withOpacity(0.2),
+                                backgroundColor: AppTheme.primaryRed.withValues(alpha: 0.2),
                                 child: Text(
                                   user.username.isNotEmpty ? user.username[0].toUpperCase() : '?',
                                   style: const TextStyle(color: AppTheme.primaryRed, fontWeight: FontWeight.bold),
@@ -256,7 +256,7 @@ class SubAdminManagementPage extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryBlack.withOpacity(0.5),
+                              color: AppTheme.primaryBlack.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(color: AppTheme.grayBorder),
                             ),
@@ -314,7 +314,7 @@ class SubAdminManagementPage extends ConsumerWidget {
               child: ListTile(
                 contentPadding: const EdgeInsets.all(16),
                 leading: CircleAvatar(
-                  backgroundColor: AppTheme.primaryRed.withOpacity(0.2),
+                  backgroundColor: AppTheme.primaryRed.withValues(alpha: 0.2),
                   child: Text(
                     user.username.isNotEmpty ? user.username[0].toUpperCase() : '?',
                     style: const TextStyle(color: AppTheme.primaryRed, fontWeight: FontWeight.bold),

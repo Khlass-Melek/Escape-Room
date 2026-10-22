@@ -52,7 +52,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
   final TextEditingController _audioTitleController = TextEditingController();
   final TextEditingController _audioFileController = TextEditingController();
 
-  void _enterFormView([Map<String, dynamic>? scenario, List<String> mappedEnigmas = const []]) {
+  void _enterFormView([Map<String, dynamic>? scenario]) {
     setState(() {
       if (scenario != null) {
         _editingScenarioId = scenario['id'];
@@ -132,7 +132,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
           center: Alignment.topCenter,
           radius: 1.5,
           colors: [
-            AppTheme.secondaryBlack.withOpacity(0.4),
+            AppTheme.secondaryBlack.withValues(alpha: 0.4),
             AppTheme.primaryBlack,
           ],
         ),
@@ -214,10 +214,10 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
           decoration: BoxDecoration(
             color: AppTheme.secondaryBlack,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.primaryRed.withOpacity(0.5), width: 1.5, style: BorderStyle.solid),
+            border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.5), width: 1.5, style: BorderStyle.solid),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryRed.withOpacity(0.1),
+                color: AppTheme.primaryRed.withValues(alpha: 0.1),
                 blurRadius: 20,
               ),
             ],
@@ -228,7 +228,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryRed.withOpacity(0.1),
+                  color: AppTheme.primaryRed.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.add_rounded, color: AppTheme.primaryRed, size: 48),
@@ -379,9 +379,9 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                     children: _rooms.map((room) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryRed.withOpacity(0.1),
+                        color: AppTheme.primaryRed.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
+                        border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -448,7 +448,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: enigmas.length,
-                              separatorBuilder: (_, __) => Divider(color: AppTheme.grayBorder.withOpacity(0.1), height: 1),
+                              separatorBuilder: (_, _) => Divider(color: AppTheme.grayBorder.withValues(alpha: 0.1), height: 1),
                               itemBuilder: (context, index) {
                                 final enigma = enigmas[index];
                                 final isSelected = _enigmaCameraMappings.containsKey(enigma.id);
@@ -460,7 +460,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                                       title: Text(enigma.name.toUpperCase(), style: const TextStyle(color: AppTheme.white, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1)),
                                       subtitle: Text('MODULE : ${enigma.type.toUpperCase()}', style: const TextStyle(color: AppTheme.grayText, fontSize: 9)),
                                       value: isSelected,
-                                      activeColor: AppTheme.primaryRed,
+                                      activeThumbColor: AppTheme.primaryRed,
                                       onChanged: (val) {
                                         setState(() {
                                           if (val) {
@@ -485,7 +485,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                                                 decoration: BoxDecoration(
                                                   color: AppTheme.primaryBlack,
                                                   borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
+                                                  border: Border.all(color: AppTheme.primaryRed.withValues(alpha: 0.3)),
                                                 ),
                                                 child: DropdownButton<String>(
                                                   value: _cameras.contains(selectedIp) ? selectedIp : _cameras.first,
@@ -610,7 +610,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                                 label: const Text('IMPORTER DEPUIS SUPABASE STORAGE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppTheme.primaryRed,
-                                  side: BorderSide(color: AppTheme.primaryRed.withOpacity(0.5)),
+                                  side: BorderSide(color: AppTheme.primaryRed.withValues(alpha: 0.5)),
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -680,7 +680,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(color: AppTheme.primaryRed, width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      backgroundColor: AppTheme.primaryRed.withOpacity(0.05),
+                      backgroundColor: AppTheme.primaryRed.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -740,7 +740,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
                   labelText: 'SOUS-DOSSIER (OPTIONNEL)',
                   labelStyle: const TextStyle(color: AppTheme.grayText, fontSize: 11),
                   hintText: 'Ex: saw1',
-                  hintStyle: TextStyle(color: AppTheme.grayText.withOpacity(0.5)),
+                  hintStyle: TextStyle(color: AppTheme.grayText.withValues(alpha: 0.5)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.grayBorder)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primaryRed)),
                   fillColor: AppTheme.primaryBlack,
@@ -936,7 +936,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppTheme.primaryRed.withOpacity(0.1),
+                color: AppTheme.primaryRed.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: AppTheme.primaryRed, size: 20),
@@ -955,9 +955,9 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppTheme.secondaryBlack.withOpacity(0.3),
+            color: AppTheme.secondaryBlack.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppTheme.grayBorder.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.grayBorder.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -975,7 +975,7 @@ class _ScenarioSettingsPageState extends ConsumerState<ScenarioSettingsPage> {
       decoration: BoxDecoration(
         color: AppTheme.primaryBlack,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.grayBorder.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.grayBorder.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -1030,7 +1030,7 @@ class _ScenarioEditCardState extends State<_ScenarioEditCard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: _isHovered ? AppTheme.primaryRed.withOpacity(0.1) : Colors.black.withOpacity(0.5),
+                color: _isHovered ? AppTheme.primaryRed.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.5),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1058,8 +1058,8 @@ class _ScenarioEditCardState extends State<_ScenarioEditCard> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.8),
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.8),
                       ],
                     ),
                   ),
@@ -1087,7 +1087,7 @@ class _ScenarioEditCardState extends State<_ScenarioEditCard> {
                       Text(
                         widget.description,
                         style: TextStyle(
-                          color: AppTheme.white.withOpacity(0.6),
+                          color: AppTheme.white.withValues(alpha: 0.6),
                           fontSize: Responsive.isMobile(context) ? 10 : 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1098,10 +1098,10 @@ class _ScenarioEditCardState extends State<_ScenarioEditCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: _isHovered ? AppTheme.primaryRed : AppTheme.white.withOpacity(0.1),
+                          color: _isHovered ? AppTheme.primaryRed : AppTheme.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _isHovered ? Colors.transparent : AppTheme.white.withOpacity(0.2),
+                            color: _isHovered ? Colors.transparent : AppTheme.white.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Center(

@@ -131,7 +131,7 @@ class _ScenarioCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryRed.withOpacity(0.2),
+                      color: AppTheme.primaryRed.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: AppTheme.primaryRed),
                     ),
@@ -144,7 +144,7 @@ class _ScenarioCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.successGreen.withOpacity(0.2),
+                      color: AppTheme.successGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: AppTheme.successGreen),
                     ),

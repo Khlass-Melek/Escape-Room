@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:escape_room_admin/core/services/mqtt_service.dart';
-import 'package:escape_room_admin/core/services/public_mqtt_service.dart';
 import 'package:escape_room_admin/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -105,7 +104,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.grayBorder, width: 0.5),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -117,7 +116,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.successGreen.withOpacity(0.1),
+                  color: AppTheme.successGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.local_florist_rounded, color: AppTheme.successGreen, size: 20),
@@ -136,7 +135,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _ledColor,
-                  boxShadow: [BoxShadow(color: _ledColor.withOpacity(0.6), blurRadius: 6, spreadRadius: 1)],
+                  boxShadow: [BoxShadow(color: _ledColor.withValues(alpha: 0.6), blurRadius: 6, spreadRadius: 1)],
                 ),
               ),
             ],
@@ -189,7 +188,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                         decoration: BoxDecoration(
                           color: _barColor,
                           borderRadius: BorderRadius.circular(6),
-                          boxShadow: [BoxShadow(color: _barColor.withOpacity(0.4), blurRadius: 4)],
+                          boxShadow: [BoxShadow(color: _barColor.withValues(alpha: 0.4), blurRadius: 4)],
                         ),
                       ),
                     ),
@@ -199,7 +198,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                       child: Container(
                         width: 2,
                         height: 12,
-                        color: AppTheme.white.withOpacity(0.4),
+                        color: AppTheme.white.withValues(alpha: 0.4),
                       ),
                     ),
                   ],
@@ -212,7 +211,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                     Text(
                       'Seuil: $_threshold%',
                       style: TextStyle(
-                        color: AppTheme.warningOrange.withOpacity(0.8),
+                        color: AppTheme.warningOrange.withValues(alpha: 0.8),
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
@@ -231,7 +230,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
             decoration: BoxDecoration(
               color: AppTheme.primaryBlack,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _isSolved ? AppTheme.successGreen.withOpacity(0.4) : AppTheme.grayBorder, width: 0.5),
+              border: Border.all(color: _isSolved ? AppTheme.successGreen.withValues(alpha: 0.4) : AppTheme.grayBorder, width: 0.5),
             ),
             child: Text(
               _statusText.toUpperCase(),
@@ -253,7 +252,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                   onPressed: _reset,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.grayText,
-                    side: BorderSide(color: AppTheme.grayText.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.grayText.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -270,7 +269,7 @@ class _PlantEnigmaWidgetState extends State<PlantEnigmaWidget> {
                   onPressed: _bypass,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.successGreen,
-                    side: BorderSide(color: AppTheme.successGreen.withOpacity(0.5)),
+                    side: BorderSide(color: AppTheme.successGreen.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
